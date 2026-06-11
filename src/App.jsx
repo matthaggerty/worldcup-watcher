@@ -185,19 +185,83 @@ function FavBadge({ match }) {
   );
 }
 
+function MatchCard({ m, tz, dayLabel }) {
+  return (
+    <div style={{
+      background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)",
+      borderLeft:`3px solid ${groupColors[m.group]||"#e8c96a"}`,
+      borderRadius:8, padding:"12px 14px", marginBottom:10,
+    }}>
+      {/* Row 1: group badge + teams + fav */}
+      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+        <div style={{ width:26, height:26, borderRadius:"50%", flexShrink:0,
+          background:groupColors[m.group]||"#e8c96a", display:"flex", alignItems:"center",
+          justifyContent:"center", fontSize:"10px", fontWeight:800, color:"#fff" }}>
+          {m.group}
+        </div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+            <span style={{ fontSize:"14px", fontWeight:700 }}>{m.home}</span>
+            <span style={{ fontSize:"10px", color:"#4a6a8a", fontWeight:600 }}>vs</span>
+            <span style={{ fontSize:"14px", fontWeight:700 }}>{m.away}</span>
+          </div>
+          <div style={{ marginTop:3, fontSize:"11px", color:"#5a7a9a" }}>
+            {dayLabel ? `${dayLabel} · ` : ""}📍 {m.venue}
+          </div>
+        </div>
+        {m.favorite !== null && <FavBadge match={m} />}
+        {m.favorite === null && <div style={{ minWidth:70, textAlign:"center", fontSize:"10px", color:"#4a6a8a" }}>TBD</div>}
+      </div>
+
+      {/* Row 2: time + broadcast chips */}
+      <div style={{ marginTop:8, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
+        <span style={{ fontSize:"14px", fontWeight:700, color:"#e8c96a" }}>
+          {m.etH != null ? convertTime(m.etH, m.etM, tz) : "TBD"}
+        </span>
+        <div style={{ display:"flex", gap:4, flexWrap:"wrap", alignItems:"center" }}>
+          {(m.broadcast||[]).map(b => (
+            <div key={b} style={{ background:broadcastStyle[b]?.bg||"#333", color:broadcastStyle[b]?.color||"#fff",
+              borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>
+              {broadcastStyle[b]?.label||b}
+            </div>
+          ))}
+          <div style={{ background:"#1a4a88", color:"#fff", borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>Fox One</div>
+          <div style={{ background:"#c00", color:"#fff", borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>Telemundo</div>
+          <div style={{ background:"#9b59b6", color:"#fff", borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>Peacock</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const TZ_LIST = ["ET","CT","MT","PT"];
+
+const cleanName = raw => raw.replace(/^[\p{Emoji}\s]+/u, "").trim();
+
+// All countries appearing in the group stage, sorted alphabetically
+const ALL_COUNTRIES = Array.from(new Set(
+  Object.values(schedule["GROUP STAGE"]).flat().flatMap(m => [m.home, m.away])
+)).filter(name => cleanName(name) !== "TBD")
+  .sort((a, b) => cleanName(a).localeCompare(cleanName(b)));
 
 export default function WorldCupSchedule() {
   const [activeStage, setActiveStage] = useState("GROUP STAGE");
   const [activeDay,   setActiveDay]   = useState(Object.keys(schedule["GROUP STAGE"])[0]);
-  const [filterGroup, setFilterGroup] = useState("ALL");
+  const [myCountry,   setMyCountry]   = useState("");
   const [tz,          setTz]          = useState("ET");
 
   const stages = Object.keys(schedule);
   const days    = Object.keys(schedule[activeStage]);
   const matches = schedule[activeStage][activeDay] || [];
-  const filtered = filterGroup === "ALL" ? matches : matches.filter(m => m.group === filterGroup);
-  const allGroups = ["ALL","A","B","C","D","E","F","G","H","I","J","K","L"];
+
+  // Matches involving the user's chosen country, across the whole tournament
+  const myMatches = !myCountry ? [] : Object.entries(schedule).flatMap(([stageName, stageDays]) =>
+    Object.entries(stageDays).flatMap(([dayName, dayMatches]) =>
+      dayMatches
+        .filter(m => cleanName(m.home) === myCountry || cleanName(m.away) === myCountry)
+        .map(m => ({ ...m, stageName, dayName }))
+    )
+  );
 
   return (
     <div style={{ minHeight:"100vh", background:"linear-gradient(135deg,#0a1628 0%,#1a2d4f 50%,#0d1f38 100%)", fontFamily:"'Segoe UI',system-ui,sans-serif", color:"#e8f0fe" }}>
@@ -211,134 +275,88 @@ export default function WorldCupSchedule() {
         </div>
       </div>
 
-      {/* Stage Tabs */}
-      <div style={{ display:"flex", borderBottom:"1px solid rgba(255,255,255,0.1)", background:"rgba(0,0,0,0.3)" }}>
-        {stages.map(s => (
-          <button key={s} onClick={() => { setActiveStage(s); setActiveDay(Object.keys(schedule[s])[0]); setFilterGroup("ALL"); }}
-            style={{ flex:1, padding:"12px 4px", border:"none", background:"none", cursor:"pointer",
-              fontSize:"11px", fontWeight:700, letterSpacing:"1px",
-              color: activeStage===s ? "#e8c96a" : "#6b8ab8",
-              borderBottom: activeStage===s ? "2px solid #e8c96a" : "2px solid transparent" }}>
-            {s}
-          </button>
-        ))}
+      {/* My Country Selector + TZ toggle on same row */}
+      <div style={{ padding:"10px 16px 0", display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+        <select value={myCountry} onChange={e => setMyCountry(e.target.value)}
+          style={{ padding:"5px 10px", borderRadius:8, border:"1px solid rgba(255,255,255,0.15)",
+            background:"rgba(0,0,0,0.3)", color: myCountry ? "#e8c96a" : "#8aabcc",
+            fontSize:"12px", fontWeight:700, cursor:"pointer" }}>
+          <option value="">⭐ Select your country…</option>
+          {ALL_COUNTRIES.map(c => (
+            <option key={c} value={cleanName(c)} style={{ color:"#000" }}>{c}</option>
+          ))}
+        </select>
+
+        {/* TZ Toggle */}
+        <div style={{ display:"flex", background:"rgba(0,0,0,0.3)", borderRadius:8, border:"1px solid rgba(255,255,255,0.1)", overflow:"hidden", flexShrink:0 }}>
+          {TZ_LIST.map(t => (
+            <button key={t} onClick={() => setTz(t)}
+              style={{ padding:"4px 10px", border:"none", cursor:"pointer", fontSize:"11px", fontWeight:700,
+                background: tz===t ? "#e8c96a" : "transparent",
+                color: tz===t ? "#1a1000" : "#6b8ab8",
+                borderRight: t !== "PT" ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Group Filter + TZ toggle on same row */}
-      {activeStage === "GROUP STAGE" && (
-        <div style={{ padding:"10px 16px 0", display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8, flexWrap:"wrap" }}>
-          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-            {allGroups.map(g => (
-              <button key={g} onClick={() => setFilterGroup(g)}
-                style={{ padding:"3px 9px", border:"1px solid",
-                  borderColor: filterGroup===g ? (g==="ALL" ? "#e8c96a" : groupColors[g]) : "rgba(255,255,255,0.12)",
-                  background: filterGroup===g ? (g==="ALL" ? "rgba(232,201,106,0.15)" : `${groupColors[g]}22`) : "transparent",
-                  borderRadius:12, cursor:"pointer", fontSize:"11px", fontWeight:700,
-                  color: filterGroup===g ? (g==="ALL" ? "#e8c96a" : groupColors[g]) : "#6b8ab8" }}>
-                {g==="ALL" ? "ALL" : `GRP ${g}`}
-              </button>
-            ))}
+      {/* My Country Schedule */}
+      {myCountry && (
+        <div style={{ padding:"14px 16px 8px" }}>
+          <div style={{ fontSize:"11px", fontWeight:700, letterSpacing:"2px", color:"#e8c96a", marginBottom:10 }}>
+            {myCountry.toUpperCase()}'S SCHEDULE
           </div>
-
-          {/* TZ Toggle */}
-          <div style={{ display:"flex", background:"rgba(0,0,0,0.3)", borderRadius:8, border:"1px solid rgba(255,255,255,0.1)", overflow:"hidden", flexShrink:0 }}>
-            {TZ_LIST.map(t => (
-              <button key={t} onClick={() => setTz(t)}
-                style={{ padding:"4px 10px", border:"none", cursor:"pointer", fontSize:"11px", fontWeight:700,
-                  background: tz===t ? "#e8c96a" : "transparent",
-                  color: tz===t ? "#1a1000" : "#6b8ab8",
-                  borderRight: t !== "PT" ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
-                {t}
-              </button>
-            ))}
-          </div>
+          {myMatches.length === 0 && (
+            <div style={{ textAlign:"center", padding:40, color:"#4a6a8a", fontSize:14 }}>
+              No scheduled matches found for {myCountry} yet
+            </div>
+          )}
+          {myMatches.map((m, i) => (
+            <MatchCard key={i} m={m} tz={tz} dayLabel={m.dayName} />
+          ))}
         </div>
       )}
 
-      {/* TZ toggle for knockout stage too */}
-      {activeStage !== "GROUP STAGE" && (
-        <div style={{ padding:"10px 16px 0", display:"flex", justifyContent:"flex-end" }}>
-          <div style={{ display:"flex", background:"rgba(0,0,0,0.3)", borderRadius:8, border:"1px solid rgba(255,255,255,0.1)", overflow:"hidden" }}>
-            {TZ_LIST.map(t => (
-              <button key={t} onClick={() => setTz(t)}
-                style={{ padding:"4px 10px", border:"none", cursor:"pointer", fontSize:"11px", fontWeight:700,
-                  background: tz===t ? "#e8c96a" : "transparent",
-                  color: tz===t ? "#1a1000" : "#6b8ab8",
-                  borderRight: t !== "PT" ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
-                {t}
+      {/* Browse all matches by stage/day (hidden once a country is selected) */}
+      {!myCountry && (
+        <>
+          {/* Stage Tabs */}
+          <div style={{ display:"flex", borderBottom:"1px solid rgba(255,255,255,0.1)", background:"rgba(0,0,0,0.3)" }}>
+            {stages.map(s => (
+              <button key={s} onClick={() => { setActiveStage(s); setActiveDay(Object.keys(schedule[s])[0]); }}
+                style={{ flex:1, padding:"12px 4px", border:"none", background:"none", cursor:"pointer",
+                  fontSize:"11px", fontWeight:700, letterSpacing:"1px",
+                  color: activeStage===s ? "#e8c96a" : "#6b8ab8",
+                  borderBottom: activeStage===s ? "2px solid #e8c96a" : "2px solid transparent" }}>
+                {s}
               </button>
             ))}
           </div>
-        </div>
+
+          {/* Day Selector */}
+          <div style={{ padding:"10px 16px", display:"flex", gap:6, overflowX:"auto", WebkitOverflowScrolling:"touch", scrollbarWidth:"none" }}>
+            {days.map(d => (
+              <button key={d} onClick={() => setActiveDay(d)}
+                style={{ whiteSpace:"nowrap", padding:"5px 11px",
+                  background: activeDay===d ? "#e8c96a" : "rgba(255,255,255,0.06)",
+                  border:"1px solid", borderColor: activeDay===d ? "#e8c96a" : "rgba(255,255,255,0.12)",
+                  borderRadius:6, cursor:"pointer", fontSize:"12px",
+                  fontWeight: activeDay===d ? 700 : 500,
+                  color: activeDay===d ? "#1a1000" : "#8aabcc" }}>
+                {d}
+              </button>
+            ))}
+          </div>
+
+          {/* Match Cards */}
+          <div style={{ padding:"0 16px 8px" }}>
+            {matches.map((m, i) => (
+              <MatchCard key={i} m={m} tz={tz} />
+            ))}
+          </div>
+        </>
       )}
-
-      {/* Day Selector */}
-      <div style={{ padding:"10px 16px", display:"flex", gap:6, overflowX:"auto", WebkitOverflowScrolling:"touch", scrollbarWidth:"none" }}>
-        {days.map(d => (
-          <button key={d} onClick={() => setActiveDay(d)}
-            style={{ whiteSpace:"nowrap", padding:"5px 11px",
-              background: activeDay===d ? "#e8c96a" : "rgba(255,255,255,0.06)",
-              border:"1px solid", borderColor: activeDay===d ? "#e8c96a" : "rgba(255,255,255,0.12)",
-              borderRadius:6, cursor:"pointer", fontSize:"12px",
-              fontWeight: activeDay===d ? 700 : 500,
-              color: activeDay===d ? "#1a1000" : "#8aabcc" }}>
-            {d}
-          </button>
-        ))}
-      </div>
-
-      {/* Match Cards */}
-      <div style={{ padding:"0 16px 8px" }}>
-        {filtered.length === 0 && (
-          <div style={{ textAlign:"center", padding:40, color:"#4a6a8a", fontSize:14 }}>
-            No matches for Group {filterGroup} on this day
-          </div>
-        )}
-        {filtered.map((m, i) => (
-          <div key={i} style={{
-            background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)",
-            borderLeft:`3px solid ${groupColors[m.group]||"#e8c96a"}`,
-            borderRadius:8, padding:"12px 14px", marginBottom:10,
-          }}>
-            {/* Row 1: group badge + teams + fav */}
-            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <div style={{ width:26, height:26, borderRadius:"50%", flexShrink:0,
-                background:groupColors[m.group]||"#e8c96a", display:"flex", alignItems:"center",
-                justifyContent:"center", fontSize:"10px", fontWeight:800, color:"#fff" }}>
-                {m.group}
-              </div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
-                  <span style={{ fontSize:"14px", fontWeight:700 }}>{m.home}</span>
-                  <span style={{ fontSize:"10px", color:"#4a6a8a", fontWeight:600 }}>vs</span>
-                  <span style={{ fontSize:"14px", fontWeight:700 }}>{m.away}</span>
-                </div>
-                <div style={{ marginTop:3, fontSize:"11px", color:"#5a7a9a" }}>📍 {m.venue}</div>
-              </div>
-              {m.favorite !== null && <FavBadge match={m} />}
-              {m.favorite === null && <div style={{ minWidth:70, textAlign:"center", fontSize:"10px", color:"#4a6a8a" }}>TBD</div>}
-            </div>
-
-            {/* Row 2: time + broadcast chips */}
-            <div style={{ marginTop:8, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
-              <span style={{ fontSize:"14px", fontWeight:700, color:"#e8c96a" }}>
-                {m.etH != null ? convertTime(m.etH, m.etM, tz) : "TBD"}
-              </span>
-              <div style={{ display:"flex", gap:4, flexWrap:"wrap", alignItems:"center" }}>
-                {(m.broadcast||[]).map(b => (
-                  <div key={b} style={{ background:broadcastStyle[b]?.bg||"#333", color:broadcastStyle[b]?.color||"#fff",
-                    borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>
-                    {broadcastStyle[b]?.label||b}
-                  </div>
-                ))}
-                <div style={{ background:"#1a4a88", color:"#fff", borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>Fox One</div>
-                <div style={{ background:"#c00", color:"#fff", borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>Telemundo</div>
-                <div style={{ background:"#9b59b6", color:"#fff", borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>Peacock</div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
 
       {/* Key Dates */}
       <div style={{ margin:"0 16px 24px", background:"rgba(232,201,106,0.05)", border:"1px solid rgba(232,201,106,0.15)", borderRadius:8, padding:"14px 16px" }}>
