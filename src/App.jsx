@@ -533,7 +533,7 @@ export default function WorldCupSchedule() {
       value={tz}
       onChange={e => setTz(e.target.value)}
       style={{
-        flexShrink:0, minWidth:72,
+        flexShrink:0, minWidth:64,
         background:"rgba(255,255,255,0.06)", color:"#e8f0fe",
         border:"1px solid rgba(255,255,255,0.15)", borderRadius:8,
         padding:"7px 12px", fontSize:"13px", fontWeight:600, cursor:"pointer",
@@ -591,7 +591,7 @@ export default function WorldCupSchedule() {
           value={selectedTeam}
           onChange={e => handleTeamChange(e.target.value)}
           style={{
-            flex:1, minWidth:160, maxWidth:280,
+            flex:1, minWidth:130, maxWidth:280,
             background:"rgba(255,255,255,0.06)", color:"#e8f0fe",
             border:"1px solid rgba(255,255,255,0.15)", borderRadius:8,
             padding:"7px 12px", fontSize:"13px", fontWeight:600, cursor:"pointer",
@@ -606,12 +606,12 @@ export default function WorldCupSchedule() {
           value={selectedGroup}
           onChange={e => handleGroupChange(e.target.value)}
           style={{
-            flex:1, minWidth:120, maxWidth:200,
+            flex:1, minWidth:118, maxWidth:180,
             background:"rgba(255,255,255,0.06)", color:"#e8f0fe",
             border:"1px solid rgba(255,255,255,0.15)", borderRadius:8,
             padding:"7px 12px", fontSize:"13px", fontWeight:600, cursor:"pointer",
             appearance:"none", backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b8ab8' d='M6 8L0 0h12z'/%3E%3C/svg%3E\")",
-            backgroundRepeat:"no-repeat", backgroundPosition:"right 12px center",
+            backgroundRepeat:"no-repeat", backgroundPosition:"right 12px center", paddingRight:24,
           }}>
           {GROUP_OPTIONS.map(g => (
             <option key={g} value={g} style={{ background:"#15161a", color:"#e8f0fe" }}>{g}</option>
