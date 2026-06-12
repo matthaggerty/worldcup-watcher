@@ -1,19 +1,40 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 const mkMatch = (etH, etM, home, away, group, venue, broadcast, favorite, confidence) => ({
   etH, etM, home, away, group, venue, broadcast, favorite, confidence
 });
 
 function TwitterTimeline() {
+  const containerRef = useRef(null);
+  const [embedFailed, setEmbedFailed] = useState(false);
+
   useEffect(() => {
+    let cancelled = false;
+
+    const tryLoad = () => {
+      if (!window.twttr?.widgets || !containerRef.current) return;
+      window.twttr.widgets.load(containerRef.current).then((els) => {
+        if (!cancelled && (!els || els.length === 0)) setEmbedFailed(true);
+      });
+    };
+
     if (window.twttr?.widgets) {
-      window.twttr.widgets.load();
-      return;
+      tryLoad();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://platform.twitter.com/widgets.js";
+      script.async = true;
+      script.onload = tryLoad;
+      document.body.appendChild(script);
     }
-    const script = document.createElement("script");
-    script.src = "https://platform.twitter.com/widgets.js";
-    script.async = true;
-    document.body.appendChild(script);
+
+    const timeout = setTimeout(() => {
+      if (!cancelled && containerRef.current && !containerRef.current.querySelector("iframe")) {
+        setEmbedFailed(true);
+      }
+    }, 4000);
+
+    return () => { cancelled = true; clearTimeout(timeout); };
   }, []);
 
   return (
@@ -21,7 +42,8 @@ function TwitterTimeline() {
       <div style={{ fontSize:"12px", fontWeight:800, letterSpacing:"1px", color:"#8aabcc", marginBottom:10 }}>
         LATEST FROM @FOXSOCCER
       </div>
-      <div style={{ borderRadius:8, overflow:"hidden", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)" }}>
+      <div ref={containerRef} style={{ borderRadius:8, overflow:"hidden", background:"rgba(255,255,255,0.04)",
+        border:"1px solid rgba(255,255,255,0.08)", display: embedFailed ? "none" : "block" }}>
         <a
           className="twitter-timeline"
           data-theme="dark"
@@ -32,6 +54,14 @@ function TwitterTimeline() {
           Posts by @FOXSoccer
         </a>
       </div>
+      {embedFailed && (
+        <a href="https://x.com/FOXSoccer" target="_blank" rel="noopener noreferrer"
+          style={{ display:"block", textAlign:"center", padding:"16px",
+            borderRadius:8, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)",
+            color:"#e8c96a", fontWeight:700, fontSize:"13px", textDecoration:"none" }}>
+          View latest posts from @FOXSoccer on X →
+        </a>
+      )}
     </div>
   );
 }
