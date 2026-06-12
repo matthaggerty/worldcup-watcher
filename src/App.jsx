@@ -76,7 +76,7 @@ function TwitterTimeline() {
         <a href="https://x.com/FOXSoccer" target="_blank" rel="noopener noreferrer"
           style={{ display:"block", textAlign:"center", padding:"16px",
             borderRadius:8, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)",
-            color:"#e8c96a", fontWeight:700, fontSize:"13px", textDecoration:"none" }}>
+            color:"#ccff00", fontWeight:700, fontSize:"13px", textDecoration:"none" }}>
           {failed ? "View latest posts from @FOXSoccer on X →" : "Loading latest post…"}
         </a>
       )}
@@ -406,17 +406,17 @@ function MatchCard({ m, tz, showDay, liveScores }) {
   return (
     <div style={{
       background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)",
-      borderLeft:`3px solid ${groupColors[m.group]||"#e8c96a"}`,
+      borderLeft:`3px solid ${groupColors[m.group]||"#ccff00"}`,
       borderRadius:8, padding:"12px 14px", marginBottom:10,
     }}>
       {showDay && (
-        <div style={{ fontSize:"10px", color:"#e8c96a", fontWeight:700, letterSpacing:"1px", marginBottom:6 }}>
+        <div style={{ fontSize:"10px", color:"#ccff00", fontWeight:700, letterSpacing:"1px", marginBottom:6 }}>
           {m.day}
         </div>
       )}
       <div style={{ display:"flex", alignItems:"center", gap:10 }}>
         <div style={{ width:26, height:26, borderRadius:"50%", flexShrink:0,
-          background:groupColors[m.group]||"#e8c96a", display:"flex", alignItems:"center",
+          background:groupColors[m.group]||"#ccff00", display:"flex", alignItems:"center",
           justifyContent:"center", fontSize:"10px", fontWeight:800, color:"#fff" }}>
           {m.group}
         </div>
@@ -437,7 +437,7 @@ function MatchCard({ m, tz, showDay, liveScores }) {
         )}
       </div>
       <div style={{ marginTop:8, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
-        <span style={{ fontSize:"14px", fontWeight:700, color:"#e8c96a" }}>
+        <span style={{ fontSize:"14px", fontWeight:700, color:"#ccff00" }}>
           {m.etH != null ? convertTime(m.etH, m.etM, tz) : "TBD"}
         </span>
         <div style={{ display:"flex", gap:4, flexWrap:"wrap", alignItems:"center" }}>
@@ -503,8 +503,8 @@ export default function WorldCupSchedule() {
       {TZ_LIST.map(t => (
         <button key={t} onClick={() => setTz(t)}
           style={{ padding:"4px 10px", border:"none", cursor:"pointer", fontSize:"11px", fontWeight:700,
-            background: tz===t ? "#e8c96a" : "transparent",
-            color: tz===t ? "#1a1000" : "#6b8ab8",
+            background: tz===t ? "#ccff00" : "transparent",
+            color: tz===t ? "#0a0a0a" : "#6b8ab8",
             borderRight: t !== "PT" ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
           {t}
         </button>
@@ -513,14 +513,45 @@ export default function WorldCupSchedule() {
   );
 
   return (
-    <div style={{ minHeight:"100vh", background:"linear-gradient(135deg,#0a1628 0%,#1a2d4f 50%,#0d1f38 100%)", fontFamily:"'Segoe UI',system-ui,sans-serif", color:"#e8f0fe" }}>
+    <div style={{ minHeight:"100vh", background:"linear-gradient(135deg,#0a0a0a 0%,#121212 50%,#000000 100%)", fontFamily:"'Segoe UI',system-ui,sans-serif", color:"#e8f0fe" }}>
 
       {/* Header */}
-      <div style={{ background:"linear-gradient(90deg,#c8a84b 0%,#e8c96a 40%,#c8a84b 100%)", padding:"16px 24px 12px", textAlign:"center" }}>
-        <div style={{ fontSize:"11px", letterSpacing:"4px", color:"#5a3e00", fontWeight:700, marginBottom:2 }}>FIFA</div>
-        <div style={{ fontSize:"26px", fontWeight:900, color:"#1a1000", letterSpacing:"-0.5px", lineHeight:1 }}>WORLD CUP 2026</div>
-        <div style={{ fontSize:"11px", letterSpacing:"3px", color:"#5a3e00", fontWeight:600, marginTop:3 }}>
-          CANADA · MEXICO · USA &nbsp;|&nbsp; JUN 11 – JUL 19
+      <div style={{ position:"relative", background:"#000", padding:"24px 20px 18px", overflow:"hidden" }}>
+        <div style={{
+          position:"absolute", inset:0,
+          backgroundImage:"url(/stadium-bg.svg)", backgroundSize:"cover", backgroundPosition:"right top",
+          opacity:0.9, pointerEvents:"none"
+        }} />
+
+        <div style={{ position:"relative", zIndex:1 }}>
+          <svg width="60" height="36" viewBox="0 0 60 36" fill="none" style={{ marginBottom:10, display:"block" }}>
+            <circle cx="14" cy="18" r="12" stroke="#ccff00" strokeWidth="2"/>
+            <path d="M14 8 L20 13 L18 20 L10 20 L8 13 Z M14 8 L14 6 M20 13 L26 11 M18 20 L22 26 M10 20 L6 26 M8 13 L2 11"
+              stroke="#ccff00" strokeWidth="1.5" fill="none"/>
+            <line x1="30" y1="9" x2="58" y2="9" stroke="#ccff00" strokeWidth="2" opacity="0.9"/>
+            <line x1="30" y1="14" x2="50" y2="14" stroke="#ccff00" strokeWidth="2" opacity="0.6"/>
+            <line x1="30" y1="19" x2="42" y2="19" stroke="#ccff00" strokeWidth="2" opacity="0.35"/>
+          </svg>
+
+          <div style={{ fontFamily:"'Arial Black',Impact,sans-serif", fontWeight:900, fontSize:"40px",
+            lineHeight:1, letterSpacing:"-1px", color:"#fff", textTransform:"uppercase" }}>
+            World Cup
+          </div>
+          <div style={{ fontFamily:"'Arial Black',Impact,sans-serif", fontWeight:900, fontSize:"40px",
+            lineHeight:1, letterSpacing:"-1px", color:"#ccff00", textTransform:"uppercase", marginBottom:10 }}>
+            Watcher
+          </div>
+
+          <div style={{ width:36, height:4, background:"#ccff00", marginBottom:10 }} />
+
+          <div style={{ fontSize:"15px", color:"#cfd8dc", lineHeight:1.4 }}>
+            Every kickoff{" "}
+            <span style={{ color:"#ccff00", fontWeight:700 }}>without the chaos.</span>
+          </div>
+
+          <div style={{ fontSize:"10px", letterSpacing:"3px", color:"#7a8a94", fontWeight:600, marginTop:14 }}>
+            FIFA WORLD CUP 2026 &nbsp;·&nbsp; CANADA · MEXICO · USA &nbsp;·&nbsp; JUN 11 – JUL 19
+          </div>
         </div>
       </div>
 
@@ -538,7 +569,7 @@ export default function WorldCupSchedule() {
             backgroundRepeat:"no-repeat", backgroundPosition:"right 12px center",
           }}>
           {allTeams.map(t => (
-            <option key={t} value={t} style={{ background:"#1a2d4f", color:"#e8f0fe" }}>{t}</option>
+            <option key={t} value={t} style={{ background:"#15161a", color:"#e8f0fe" }}>{t}</option>
           ))}
         </select>
         <select
@@ -553,7 +584,7 @@ export default function WorldCupSchedule() {
             backgroundRepeat:"no-repeat", backgroundPosition:"right 12px center",
           }}>
           {GROUP_OPTIONS.map(g => (
-            <option key={g} value={g} style={{ background:"#1a2d4f", color:"#e8f0fe" }}>{g}</option>
+            <option key={g} value={g} style={{ background:"#15161a", color:"#e8f0fe" }}>{g}</option>
           ))}
         </select>
         <TZToggle />
@@ -562,7 +593,7 @@ export default function WorldCupSchedule() {
       {/* Country schedule view */}
       {isTeamFiltered ? (
         <div style={{ padding:"16px 16px 24px" }}>
-          <div style={{ fontSize:"14px", fontWeight:700, color:"#e8c96a", marginBottom:14, letterSpacing:"0.5px" }}>
+          <div style={{ fontSize:"14px", fontWeight:700, color:"#ccff00", marginBottom:14, letterSpacing:"0.5px" }}>
             {selectedTeam} — Group Stage Schedule
           </div>
           {teamMatches.length === 0 ? (
@@ -573,7 +604,7 @@ export default function WorldCupSchedule() {
         </div>
       ) : isGroupFiltered ? (
         <div style={{ padding:"16px 16px 24px" }}>
-          <div style={{ fontSize:"14px", fontWeight:700, color:"#e8c96a", marginBottom:14, letterSpacing:"0.5px" }}>
+          <div style={{ fontSize:"14px", fontWeight:700, color:"#ccff00", marginBottom:14, letterSpacing:"0.5px" }}>
             {selectedGroup} — Group Stage Schedule
           </div>
           {groupMatches.length === 0 ? (
@@ -590,8 +621,8 @@ export default function WorldCupSchedule() {
               <button key={s} onClick={() => { setActiveStage(s); setActiveDay(Object.keys(schedule[s])[0]); }}
                 style={{ flex:1, padding:"12px 4px", border:"none", background:"none", cursor:"pointer",
                   fontSize:"11px", fontWeight:700, letterSpacing:"1px",
-                  color: activeStage===s ? "#e8c96a" : "#6b8ab8",
-                  borderBottom: activeStage===s ? "2px solid #e8c96a" : "2px solid transparent" }}>
+                  color: activeStage===s ? "#ccff00" : "#6b8ab8",
+                  borderBottom: activeStage===s ? "2px solid #ccff00" : "2px solid transparent" }}>
                 {s}
               </button>
             ))}
@@ -602,11 +633,11 @@ export default function WorldCupSchedule() {
             {days.map(d => (
               <button key={d} onClick={() => setActiveDay(d)}
                 style={{ whiteSpace:"nowrap", padding:"5px 11px",
-                  background: activeDay===d ? "#e8c96a" : "rgba(255,255,255,0.06)",
-                  border:"1px solid", borderColor: activeDay===d ? "#e8c96a" : "rgba(255,255,255,0.12)",
+                  background: activeDay===d ? "#ccff00" : "rgba(255,255,255,0.06)",
+                  border:"1px solid", borderColor: activeDay===d ? "#ccff00" : "rgba(255,255,255,0.12)",
                   borderRadius:6, cursor:"pointer", fontSize:"12px",
                   fontWeight: activeDay===d ? 700 : 500,
-                  color: activeDay===d ? "#1a1000" : "#8aabcc" }}>
+                  color: activeDay===d ? "#0a0a0a" : "#8aabcc" }}>
                 {d}
               </button>
             ))}
