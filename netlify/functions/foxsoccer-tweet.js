@@ -35,7 +35,10 @@ export default async function handler() {
     const media = latest.extended_entities?.media || latest.entities?.media || [];
     const photo = media.find((m) => m.type === "photo");
     const video = media.find((m) => m.type === "video" || m.type === "animated_gif");
-    const videoThumb = video?.media_url_https;
+
+    const mp4Variants = (video?.video_info?.variants || [])
+      .filter((v) => v.content_type === "video/mp4")
+      .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
 
     let text = latest.full_text;
     for (const m of media) {
@@ -46,8 +49,9 @@ export default async function handler() {
       text,
       url: `https://x.com/${SCREEN_NAME}/status/${latest.id_str}`,
       createdAt: latest.created_at,
-      image: photo?.media_url_https || videoThumb || null,
-      isVideo: !!video,
+      image: photo?.media_url_https || video?.media_url_https || null,
+      video: mp4Variants[0]?.url || null,
+      videoLoop: video?.type === "animated_gif",
     };
 
     cache = { data: result, fetchedAt: now };
