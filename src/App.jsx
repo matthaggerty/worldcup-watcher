@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 const mkMatch = (etH, etM, home, away, group, venue, broadcast, favorite, confidence) => ({
   etH, etM, home, away, group, venue, broadcast, favorite, confidence
@@ -156,6 +156,89 @@ const broadcastStyle = {
   TUBI: { bg:"#00e364", color:"#000", label:"TUBI" },
 };
 
+// Maps our country names to ESPN's 3-letter team abbreviations
+const COUNTRY_CODES = {
+  "Mexico":"MEX","S. Korea":"KOR","S. Africa":"RSA","Czechia":"CZE",
+  "Canada":"CAN","Bosnia":"BIH","Qatar":"QAT","Switzerland":"SUI",
+  "Brazil":"BRA","Morocco":"MAR","Scotland":"SCO","Haiti":"HAI",
+  "USA":"USA","Australia":"AUS","Paraguay":"PAR","Türkiye":"TUR",
+  "Germany":"GER","Curaçao":"CUW","Ivory Coast":"CIV","Ecuador":"ECU",
+  "Netherlands":"NED","Japan":"JPN","Tunisia":"TUN","Sweden":"SWE",
+  "Belgium":"BEL","Egypt":"EGY","Iran":"IRN","New Zealand":"NZL",
+  "Spain":"ESP","Cape Verde":"CPV","Saudi Arabia":"KSA","Uruguay":"URU",
+  "France":"FRA","Senegal":"SEN","Norway":"NOR","Iraq":"IRQ",
+  "Argentina":"ARG","Austria":"AUT","Jordan":"JOR","Algeria":"ALG",
+  "Portugal":"POR","DR Congo":"COD","Uzbekistan":"UZB","Colombia":"COL",
+  "England":"ENG","Croatia":"CRO","Ghana":"GHA","Panama":"PAN",
+};
+
+const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
+
+function formatDateYYYYMMDD(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}${m}${day}`;
+}
+
+// Polls ESPN's scoreboard for live/recent World Cup games, keyed by sorted team-code pair
+function useLiveScores() {
+  const [liveScores, setLiveScores] = useState({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchScores() {
+      const today = new Date();
+      const dateStrings = [-1, 0, 1].map(offset => {
+        const d = new Date(today);
+        d.setDate(d.getDate() + offset);
+        return formatDateYYYYMMDD(d);
+      });
+
+      const results = {};
+      await Promise.all(dateStrings.map(async (ds) => {
+        try {
+          const res = await fetch(`${ESPN_SCOREBOARD_URL}?dates=${ds}`);
+          const data = await res.json();
+          (data.events || []).forEach(ev => {
+            const comp = ev.competitions?.[0];
+            const competitors = comp?.competitors || [];
+            if (competitors.length !== 2) return;
+            const home = competitors.find(c => c.homeAway === "home");
+            const away = competitors.find(c => c.homeAway === "away");
+            if (!home?.team?.abbreviation || !away?.team?.abbreviation) return;
+            const key = [home.team.abbreviation, away.team.abbreviation].sort().join("-");
+            const status = comp.status?.type || {};
+            results[key] = {
+              state: status.state,
+              clock: comp.status?.displayClock,
+              homeCode: home.team.abbreviation,
+              awayCode: away.team.abbreviation,
+              homeScore: home.score,
+              awayScore: away.score,
+            };
+          });
+        } catch {
+          // ignore network/API errors, just skip this date
+        }
+      }));
+
+      if (!cancelled) setLiveScores(results);
+    }
+
+    fetchScores();
+    const interval = setInterval(fetchScores, 60000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, []);
+
+  return liveScores;
+}
+
+function stripName(label) {
+  return label.replace(/^[\p{Emoji}\s]+/u,"").trim();
+}
+
 // Extract all unique teams from the group stage
 function getAllTeams() {
   const teams = new Set();
@@ -163,8 +246,8 @@ function getAllTeams() {
     day.forEach(m => { teams.add(m.home); teams.add(m.away); })
   );
   return ["🌍 All Teams", ...Array.from(teams).sort((a,b) => {
-    const nameA = a.replace(/^[\p{Emoji}\s]+/u,"").trim();
-    const nameB = b.replace(/^[\p{Emoji}\s]+/u,"").trim();
+    const nameA = stripName(a);
+    const nameB = stripName(b);
     return nameA.localeCompare(nameB);
   })];
 }
@@ -199,7 +282,7 @@ function FavBadge({ match }) {
   }
   const isHome = match.favorite === "home";
   const raw = isHome ? match.home : match.away;
-  const name = raw.replace(/^[\p{Emoji}\s]+/u,"").trim();
+  const name = stripName(raw);
   const color = match.confidence === "strong" ? "#f1c40f" : "#8aabcc";
   return (
     <div style={{ minWidth:70, textAlign:"center" }}>
@@ -214,7 +297,32 @@ function FavBadge({ match }) {
   );
 }
 
-function MatchCard({ m, tz, showDay }) {
+function LiveScoreBadge({ live, homeCode }) {
+  const isLive = live.state === "in";
+  const isFinal = live.state === "post";
+  const sameOrientation = live.homeCode === homeCode;
+  const leftScore = sameOrientation ? live.homeScore : live.awayScore;
+  const rightScore = sameOrientation ? live.awayScore : live.homeScore;
+  return (
+    <div style={{ minWidth:70, textAlign:"center" }}>
+      <div style={{ fontSize:"9px", fontWeight:800, letterSpacing:"1px", marginBottom:2,
+        color: isLive ? "#ff5a5f" : "#8aabcc" }}>
+        {isLive ? `● LIVE ${live.clock || ""}`.trim() : isFinal ? "FULL TIME" : ""}
+      </div>
+      <div style={{ fontSize:"18px", fontWeight:800, color:"#e8f0fe" }}>
+        {leftScore} – {rightScore}
+      </div>
+    </div>
+  );
+}
+
+function MatchCard({ m, tz, showDay, liveScores }) {
+  const homeCode = COUNTRY_CODES[stripName(m.home)];
+  const awayCode = COUNTRY_CODES[stripName(m.away)];
+  const pairKey = homeCode && awayCode ? [homeCode, awayCode].sort().join("-") : null;
+  const live = pairKey ? liveScores?.[pairKey] : null;
+  const showLive = live && live.state !== "pre";
+
   return (
     <div style={{
       background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)",
@@ -240,8 +348,13 @@ function MatchCard({ m, tz, showDay }) {
           </div>
           <div style={{ marginTop:3, fontSize:"11px", color:"#5a7a9a" }}>📍 {m.venue}</div>
         </div>
-        {m.favorite !== null && <FavBadge match={m} />}
-        {m.favorite === null && <div style={{ minWidth:70, textAlign:"center", fontSize:"10px", color:"#4a6a8a" }}>TBD</div>}
+        {showLive ? (
+          <LiveScoreBadge live={live} homeCode={homeCode} />
+        ) : m.favorite !== null ? (
+          <FavBadge match={m} />
+        ) : (
+          <div style={{ minWidth:70, textAlign:"center", fontSize:"10px", color:"#4a6a8a" }}>TBD</div>
+        )}
       </div>
       <div style={{ marginTop:8, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
         <span style={{ fontSize:"14px", fontWeight:700, color:"#e8c96a" }}>
@@ -275,6 +388,7 @@ export default function WorldCupSchedule() {
   const [tz,          setTz]          = useState("ET");
   const [selectedTeam, setSelectedTeam] = useState(ALL_TEAMS_LABEL);
   const [selectedGroup, setSelectedGroup] = useState(ALL_GROUPS_LABEL);
+  const liveScores = useLiveScores();
 
   const allTeams = useMemo(() => getAllTeams(), []);
   const stages   = Object.keys(schedule);
@@ -374,7 +488,7 @@ export default function WorldCupSchedule() {
           {teamMatches.length === 0 ? (
             <div style={{ textAlign:"center", padding:40, color:"#4a6a8a" }}>No matches found</div>
           ) : (
-            teamMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={true} />)
+            teamMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={true} liveScores={liveScores} />)
           )}
         </div>
       ) : isGroupFiltered ? (
@@ -385,7 +499,7 @@ export default function WorldCupSchedule() {
           {groupMatches.length === 0 ? (
             <div style={{ textAlign:"center", padding:40, color:"#4a6a8a" }}>No matches found</div>
           ) : (
-            groupMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={true} />)
+            groupMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={true} liveScores={liveScores} />)
           )}
         </div>
       ) : (
@@ -420,7 +534,7 @@ export default function WorldCupSchedule() {
 
           {/* Match Cards */}
           <div style={{ padding:"0 16px 8px" }}>
-            {dayMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={false} />)}
+            {dayMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={false} liveScores={liveScores} />)}
           </div>
 
           {/* Key Dates */}
