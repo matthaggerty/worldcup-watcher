@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 const mkMatch = (etH, etM, home, away, group, venue, broadcast, favorite, confidence) => ({
   etH, etM, home, away, group, venue, broadcast, favorite, confidence
@@ -499,17 +499,18 @@ function getTodayDayKey(days) {
   return days.includes(todayKey) ? todayKey : days[0];
 }
 
+const allDaysMatches = { ...schedule["GROUP STAGE"], ...schedule["KNOCKOUT STAGE"] };
+const allDays = Object.keys(allDaysMatches);
+
 export default function WorldCupSchedule() {
-  const [activeStage, setActiveStage] = useState("GROUP STAGE");
-  const [activeDay,   setActiveDay]   = useState(() => getTodayDayKey(Object.keys(schedule["GROUP STAGE"])));
+  const [activeDay, setActiveDay] = useState(() => getTodayDayKey(allDays));
   const [tz,          setTz]          = useState("ET");
   const [selectedTeam, setSelectedTeam] = useState(ALL_TEAMS_LABEL);
   const [selectedGroup, setSelectedGroup] = useState(ALL_GROUPS_LABEL);
   const liveScores = useLiveScores();
 
   const allTeams = useMemo(() => getAllTeams(), []);
-  const stages   = Object.keys(schedule);
-  const days     = Object.keys(schedule[activeStage]);
+  const days     = allDays;
 
   const isTeamFiltered = selectedTeam !== ALL_TEAMS_LABEL;
   const teamMatches    = useMemo(() =>
@@ -523,7 +524,27 @@ export default function WorldCupSchedule() {
     [selectedGroup, isGroupFiltered]
   );
 
-  const dayMatches = schedule[activeStage]?.[activeDay] || [];
+  const dayMatches = allDaysMatches[activeDay] || [];
+  const dayIndex   = days.indexOf(activeDay);
+
+  const activeDayRef = useRef(null);
+  useEffect(() => {
+    activeDayRef.current?.scrollIntoView({ behavior:"smooth", inline:"center", block:"nearest" });
+  }, [activeDay]);
+
+  const touchStartX = useRef(null);
+  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current == null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    const SWIPE_THRESHOLD = 50;
+    if (deltaX <= -SWIPE_THRESHOLD && dayIndex < days.length - 1) {
+      setActiveDay(days[dayIndex + 1]);
+    } else if (deltaX >= SWIPE_THRESHOLD && dayIndex > 0) {
+      setActiveDay(days[dayIndex - 1]);
+    }
+  };
 
   const handleTeamChange = (value) => {
     setSelectedTeam(value);
@@ -654,23 +675,10 @@ export default function WorldCupSchedule() {
         </div>
       ) : (
         <>
-          {/* Stage Tabs */}
-          <div style={{ display:"flex", borderBottom:"1px solid rgba(255,255,255,0.1)", background:"rgba(0,0,0,0.3)" }}>
-            {stages.map(s => (
-              <button key={s} onClick={() => { setActiveStage(s); setActiveDay(Object.keys(schedule[s])[0]); }}
-                style={{ flex:1, padding:"12px 4px", border:"none", background:"none", cursor:"pointer",
-                  fontSize:"11px", fontWeight:700, letterSpacing:"1px",
-                  color: activeStage===s ? "#ccff00" : "#6b8ab8",
-                  borderBottom: activeStage===s ? "2px solid #ccff00" : "2px solid transparent" }}>
-                {s}
-              </button>
-            ))}
-          </div>
-
           {/* Day Selector */}
-          <div style={{ padding:"10px 16px", display:"flex", gap:6, overflowX:"auto", WebkitOverflowScrolling:"touch", scrollbarWidth:"none" }}>
+          <div style={{ padding:"10px 16px", display:"flex", gap:6, overflowX:"auto", WebkitOverflowScrolling:"touch", scrollbarWidth:"none", borderBottom:"1px solid rgba(255,255,255,0.07)" }}>
             {days.map(d => (
-              <button key={d} onClick={() => setActiveDay(d)}
+              <button key={d} ref={activeDay===d ? activeDayRef : null} onClick={() => setActiveDay(d)}
                 style={{ whiteSpace:"nowrap", padding:"5px 11px",
                   background: activeDay===d ? "#ccff00" : "rgba(255,255,255,0.06)",
                   border:"1px solid", borderColor: activeDay===d ? "#ccff00" : "rgba(255,255,255,0.12)",
@@ -683,7 +691,7 @@ export default function WorldCupSchedule() {
           </div>
 
           {/* Match Cards */}
-          <div style={{ padding:"0 16px 24px" }}>
+          <div style={{ padding:"0 16px 24px" }} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
             {dayMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={false} liveScores={liveScores} />)}
             <TwitterTimeline />
           </div>
