@@ -17,6 +17,7 @@ function timeAgo(isoOrTwitterDate) {
 function TwitterTimeline() {
   const [tweet, setTweet] = useState(null);
   const [failed, setFailed] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,7 +42,7 @@ function TwitterTimeline() {
   }, []);
 
   return (
-    <div style={{ padding:"0 16px 24px" }}>
+    <div style={{ marginTop:16 }}>
       <div style={{ fontSize:"12px", fontWeight:800, letterSpacing:"1px", color:"#8aabcc", marginBottom:10 }}>
         LATEST FROM @FOXSOCCER
       </div>
@@ -49,16 +50,44 @@ function TwitterTimeline() {
         <div style={{ borderRadius:8, overflow:"hidden",
           background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)" }}>
           {tweet.video ? (
-            <video
-              src={tweet.video}
-              poster={tweet.image || undefined}
-              controls
-              loop={tweet.videoLoop}
-              muted={tweet.videoLoop}
-              autoPlay={tweet.videoLoop}
-              playsInline
-              style={{ display:"block", width:"100%", maxHeight:340, background:"#000" }}
-            />
+            <div style={{ position:"relative" }}>
+              <video
+                src={tweet.video}
+                poster={tweet.image || undefined}
+                controls
+                loop={tweet.videoLoop}
+                muted={tweet.videoLoop}
+                autoPlay={tweet.videoLoop}
+                playsInline
+                onPlay={() => setVideoPlaying(true)}
+                onPause={() => setVideoPlaying(false)}
+                style={{ display:"block", width:"100%", maxHeight:340, background:"#000" }}
+              />
+              {!tweet.videoLoop && !videoPlaying && (
+                <div
+                  onClick={(e) => {
+                    const video = e.currentTarget.previousSibling;
+                    video.play();
+                  }}
+                  style={{
+                    position:"absolute", top:0, left:0, right:0, bottom:0,
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    cursor:"pointer", pointerEvents:"auto",
+                  }}>
+                  <div style={{
+                    width:60, height:60, borderRadius:"50%",
+                    background:"rgba(0,0,0,0.5)", border:"2px solid #ccff00",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                  }}>
+                    <div style={{
+                      width:0, height:0,
+                      borderTop:"12px solid transparent", borderBottom:"12px solid transparent",
+                      borderLeft:"20px solid #ccff00", marginLeft:4,
+                    }} />
+                  </div>
+                </div>
+              )}
+            </div>
           ) : tweet.image && (
             <img src={tweet.image} alt="" style={{ display:"block", width:"100%", maxHeight:300, objectFit:"cover" }} />
           )}
@@ -407,26 +436,27 @@ function MatchCard({ m, tz, showDay, liveScores }) {
     <div style={{
       background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)",
       borderLeft:`3px solid ${groupColors[m.group]||"#ccff00"}`,
-      borderRadius:8, padding:"12px 14px", marginBottom:10,
+      borderRadius:8, padding:"16px", marginBottom:12,
+      minHeight:128, display:"flex", flexDirection:"column", justifyContent:"space-between", gap:14,
     }}>
       {showDay && (
-        <div style={{ fontSize:"10px", color:"#ccff00", fontWeight:700, letterSpacing:"1px", marginBottom:6 }}>
+        <div style={{ fontSize:"10px", color:"#ccff00", fontWeight:700, letterSpacing:"1px" }}>
           {m.day}
         </div>
       )}
-      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-        <div style={{ width:26, height:26, borderRadius:"50%", flexShrink:0,
+      <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+        <div style={{ width:30, height:30, borderRadius:"50%", flexShrink:0,
           background:groupColors[m.group]||"#ccff00", display:"flex", alignItems:"center",
-          justifyContent:"center", fontSize:"10px", fontWeight:800, color:"#fff" }}>
+          justifyContent:"center", fontSize:"11px", fontWeight:800, color:"#fff" }}>
           {m.group}
         </div>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
-            <span style={{ fontSize:"14px", fontWeight:700 }}>{m.home}</span>
+            <span style={{ fontSize:"15px", fontWeight:700 }}>{m.home}</span>
             <span style={{ fontSize:"10px", color:"#4a6a8a", fontWeight:600 }}>vs</span>
-            <span style={{ fontSize:"14px", fontWeight:700 }}>{m.away}</span>
+            <span style={{ fontSize:"15px", fontWeight:700 }}>{m.away}</span>
           </div>
-          <div style={{ marginTop:3, fontSize:"11px", color:"#5a7a9a" }}>📍 {m.venue}</div>
+          <div style={{ marginTop:6, fontSize:"11px", color:"#5a7a9a" }}>📍 {m.venue}</div>
         </div>
         {showLive ? (
           <LiveScoreBadge live={live} homeCode={homeCode} />
@@ -436,7 +466,7 @@ function MatchCard({ m, tz, showDay, liveScores }) {
           <div style={{ minWidth:70, textAlign:"center", fontSize:"10px", color:"#4a6a8a" }}>TBD</div>
         )}
       </div>
-      <div style={{ marginTop:8, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
         <span style={{ fontSize:"14px", fontWeight:700, color:"#ccff00" }}>
           {m.etH != null ? convertTime(m.etH, m.etM, tz) : "TBD"}
         </span>
@@ -499,17 +529,21 @@ export default function WorldCupSchedule() {
   };
 
   const TZToggle = () => (
-    <div style={{ display:"flex", background:"rgba(0,0,0,0.3)", borderRadius:8, border:"1px solid rgba(255,255,255,0.1)", overflow:"hidden", flexShrink:0 }}>
+    <select
+      value={tz}
+      onChange={e => setTz(e.target.value)}
+      style={{
+        flexShrink:0, minWidth:72,
+        background:"rgba(255,255,255,0.06)", color:"#e8f0fe",
+        border:"1px solid rgba(255,255,255,0.15)", borderRadius:8,
+        padding:"7px 12px", fontSize:"13px", fontWeight:600, cursor:"pointer",
+        appearance:"none", backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b8ab8' d='M6 8L0 0h12z'/%3E%3C/svg%3E\")",
+        backgroundRepeat:"no-repeat", backgroundPosition:"right 12px center",
+      }}>
       {TZ_LIST.map(t => (
-        <button key={t} onClick={() => setTz(t)}
-          style={{ padding:"4px 10px", border:"none", cursor:"pointer", fontSize:"11px", fontWeight:700,
-            background: tz===t ? "#ccff00" : "transparent",
-            color: tz===t ? "#0a0a0a" : "#6b8ab8",
-            borderRight: t !== "PT" ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
-          {t}
-        </button>
+        <option key={t} value={t} style={{ background:"#15161a", color:"#e8f0fe" }}>{t}</option>
       ))}
-    </div>
+    </select>
   );
 
   return (
@@ -597,6 +631,7 @@ export default function WorldCupSchedule() {
           ) : (
             teamMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={true} liveScores={liveScores} />)
           )}
+          <TwitterTimeline />
         </div>
       ) : isGroupFiltered ? (
         <div style={{ padding:"16px 16px 24px" }}>
@@ -608,6 +643,7 @@ export default function WorldCupSchedule() {
           ) : (
             groupMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={true} liveScores={liveScores} />)
           )}
+          <TwitterTimeline />
         </div>
       ) : (
         <>
@@ -642,9 +678,8 @@ export default function WorldCupSchedule() {
           {/* Match Cards */}
           <div style={{ padding:"0 16px 24px" }}>
             {dayMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={false} liveScores={liveScores} />)}
+            <TwitterTimeline />
           </div>
-
-          <TwitterTimeline />
         </>
       )}
     </div>
