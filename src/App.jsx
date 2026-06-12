@@ -181,6 +181,18 @@ function getMatchesForCountry(country) {
   return results;
 }
 
+function getMatchesForGroup(group) {
+  const results = [];
+  Object.entries(schedule["GROUP STAGE"]).forEach(([day, matches]) => {
+    matches.forEach(m => {
+      if (m.group === group) {
+        results.push({ ...m, day });
+      }
+    });
+  });
+  return results;
+}
+
 function FavBadge({ match }) {
   if (!match.favorite || match.favorite === "even") {
     return <div style={{ fontSize:"10px", color:"#6b8ab8", fontStyle:"italic", textAlign:"center", minWidth:70 }}>Even match</div>;
@@ -253,12 +265,16 @@ function MatchCard({ m, tz, showDay }) {
 
 const TZ_LIST = ["ET","CT","MT","PT"];
 const ALL_TEAMS_LABEL = "🌍 All Teams";
+const ALL_GROUPS_LABEL = "🏆 All Groups";
+const GROUPS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+const GROUP_OPTIONS = [ALL_GROUPS_LABEL, ...GROUPS.map(g => `Group ${g}`)];
 
 export default function WorldCupSchedule() {
   const [activeStage, setActiveStage] = useState("GROUP STAGE");
   const [activeDay,   setActiveDay]   = useState(Object.keys(schedule["GROUP STAGE"])[0]);
   const [tz,          setTz]          = useState("ET");
   const [selectedTeam, setSelectedTeam] = useState(ALL_TEAMS_LABEL);
+  const [selectedGroup, setSelectedGroup] = useState(ALL_GROUPS_LABEL);
 
   const allTeams = useMemo(() => getAllTeams(), []);
   const stages   = Object.keys(schedule);
@@ -269,7 +285,24 @@ export default function WorldCupSchedule() {
     isTeamFiltered ? getMatchesForCountry(selectedTeam) : [],
     [selectedTeam, isTeamFiltered]
   );
+
+  const isGroupFiltered = selectedGroup !== ALL_GROUPS_LABEL;
+  const groupMatches    = useMemo(() =>
+    isGroupFiltered ? getMatchesForGroup(selectedGroup.replace("Group ","")) : [],
+    [selectedGroup, isGroupFiltered]
+  );
+
   const dayMatches = schedule[activeStage]?.[activeDay] || [];
+
+  const handleTeamChange = (value) => {
+    setSelectedTeam(value);
+    if (value !== ALL_TEAMS_LABEL) setSelectedGroup(ALL_GROUPS_LABEL);
+  };
+
+  const handleGroupChange = (value) => {
+    setSelectedGroup(value);
+    if (value !== ALL_GROUPS_LABEL) setSelectedTeam(ALL_TEAMS_LABEL);
+  };
 
   const TZToggle = () => (
     <div style={{ display:"flex", background:"rgba(0,0,0,0.3)", borderRadius:8, border:"1px solid rgba(255,255,255,0.1)", overflow:"hidden", flexShrink:0 }}>
@@ -297,13 +330,13 @@ export default function WorldCupSchedule() {
         </div>
       </div>
 
-      {/* Country selector + TZ toggle */}
+      {/* Country/Group selectors + TZ toggle */}
       <div style={{ padding:"12px 16px", display:"flex", gap:10, alignItems:"center", flexWrap:"wrap", justifyContent:"space-between", borderBottom:"1px solid rgba(255,255,255,0.07)" }}>
         <select
           value={selectedTeam}
-          onChange={e => setSelectedTeam(e.target.value)}
+          onChange={e => handleTeamChange(e.target.value)}
           style={{
-            flex:1, minWidth:180, maxWidth:280,
+            flex:1, minWidth:160, maxWidth:280,
             background:"rgba(255,255,255,0.06)", color:"#e8f0fe",
             border:"1px solid rgba(255,255,255,0.15)", borderRadius:8,
             padding:"7px 12px", fontSize:"13px", fontWeight:600, cursor:"pointer",
@@ -312,6 +345,21 @@ export default function WorldCupSchedule() {
           }}>
           {allTeams.map(t => (
             <option key={t} value={t} style={{ background:"#1a2d4f", color:"#e8f0fe" }}>{t}</option>
+          ))}
+        </select>
+        <select
+          value={selectedGroup}
+          onChange={e => handleGroupChange(e.target.value)}
+          style={{
+            flex:1, minWidth:120, maxWidth:200,
+            background:"rgba(255,255,255,0.06)", color:"#e8f0fe",
+            border:"1px solid rgba(255,255,255,0.15)", borderRadius:8,
+            padding:"7px 12px", fontSize:"13px", fontWeight:600, cursor:"pointer",
+            appearance:"none", backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b8ab8' d='M6 8L0 0h12z'/%3E%3C/svg%3E\")",
+            backgroundRepeat:"no-repeat", backgroundPosition:"right 12px center",
+          }}>
+          {GROUP_OPTIONS.map(g => (
+            <option key={g} value={g} style={{ background:"#1a2d4f", color:"#e8f0fe" }}>{g}</option>
           ))}
         </select>
         <TZToggle />
@@ -327,6 +375,17 @@ export default function WorldCupSchedule() {
             <div style={{ textAlign:"center", padding:40, color:"#4a6a8a" }}>No matches found</div>
           ) : (
             teamMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={true} />)
+          )}
+        </div>
+      ) : isGroupFiltered ? (
+        <div style={{ padding:"16px 16px 24px" }}>
+          <div style={{ fontSize:"14px", fontWeight:700, color:"#e8c96a", marginBottom:14, letterSpacing:"0.5px" }}>
+            {selectedGroup} — Group Stage Schedule
+          </div>
+          {groupMatches.length === 0 ? (
+            <div style={{ textAlign:"center", padding:40, color:"#4a6a8a" }}>No matches found</div>
+          ) : (
+            groupMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={true} />)
           )}
         </div>
       ) : (
