@@ -4,8 +4,8 @@ const mkMatch = (etH, etM, home, away, group, venue, broadcast, favorite, confid
   etH, etM, home, away, group, venue, broadcast, favorite, confidence
 });
 
-function timeAgo(isoOrTwitterDate) {
-  const diffMs = Date.now() - new Date(isoOrTwitterDate).getTime();
+function timeAgo(iso) {
+  const diffMs = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diffMs / 60000);
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m ago`;
@@ -15,15 +15,14 @@ function timeAgo(isoOrTwitterDate) {
 }
 
 function TwitterTimeline() {
-  const [tweet, setTweet] = useState(null);
+  const [short, setShort] = useState(null);
   const [failed, setFailed] = useState(false);
-  const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     const load = () => {
-      fetch("/.netlify/functions/foxsoccer-tweet")
+      fetch("/.netlify/functions/foxsoccer-short")
         .then((res) => {
           if (!res.ok) throw new Error(`status ${res.status}`);
           return res.json();
@@ -31,7 +30,7 @@ function TwitterTimeline() {
         .then((data) => {
           if (cancelled) return;
           if (data.error) throw new Error(data.error);
-          setTweet(data);
+          setShort(data);
         })
         .catch(() => { if (!cancelled) setFailed(true); });
     };
@@ -44,69 +43,36 @@ function TwitterTimeline() {
   return (
     <div style={{ marginTop:16 }}>
       <div style={{ fontSize:"12px", fontWeight:800, letterSpacing:"1px", color:"#8aabcc", marginBottom:10 }}>
-        LATEST FROM @FOXSOCCER
+        LATEST FROM FOX SOCCER
       </div>
-      {tweet ? (
+      {short ? (
         <div style={{ borderRadius:8, overflow:"hidden",
           background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)" }}>
-          {tweet.video ? (
-            <div style={{ position:"relative" }}>
-              <video
-                src={tweet.video}
-                poster={tweet.image || undefined}
-                controls
-                loop={tweet.videoLoop}
-                muted={tweet.videoLoop}
-                autoPlay={tweet.videoLoop}
-                playsInline
-                onPlay={() => setVideoPlaying(true)}
-                onPause={() => setVideoPlaying(false)}
-                style={{ display:"block", width:"100%", maxHeight:340, background:"#000" }}
-              />
-              {!tweet.videoLoop && !videoPlaying && (
-                <div
-                  onClick={(e) => {
-                    const video = e.currentTarget.previousSibling;
-                    video.play();
-                  }}
-                  style={{
-                    position:"absolute", top:0, left:0, right:0, bottom:0,
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                    cursor:"pointer", pointerEvents:"auto",
-                  }}>
-                  <div style={{
-                    width:60, height:60, borderRadius:"50%",
-                    background:"rgba(0,0,0,0.5)", border:"2px solid #ccff00",
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                  }}>
-                    <div style={{
-                      width:0, height:0,
-                      borderTop:"12px solid transparent", borderBottom:"12px solid transparent",
-                      borderLeft:"20px solid #ccff00", marginLeft:4,
-                    }} />
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : tweet.image && (
-            <img src={tweet.image} alt="" style={{ display:"block", width:"100%", maxHeight:300, objectFit:"cover" }} />
-          )}
-          <a href={tweet.url} target="_blank" rel="noopener noreferrer"
+          <div style={{ position:"relative", width:"100%", aspectRatio:"9 / 16", background:"#000" }}>
+            <iframe
+              src={`https://www.youtube.com/embed/${short.videoId}`}
+              title={short.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ position:"absolute", top:0, left:0, width:"100%", height:"100%", border:"none" }}
+            />
+          </div>
+          <a href={short.url} target="_blank" rel="noopener noreferrer"
             style={{ display:"block", padding:"14px 16px", textDecoration:"none" }}>
             <div style={{ fontSize:"14px", color:"#e8f0fe", lineHeight:1.5, marginBottom:8 }}>
-              {tweet.text}
+              {short.title}
             </div>
             <div style={{ fontSize:"12px", color:"#6b8ab8" }}>
-              @FOXSoccer · {timeAgo(tweet.createdAt)}
+              FOX Soccer · {timeAgo(short.publishedAt)}
             </div>
           </a>
         </div>
       ) : (
-        <a href="https://x.com/FOXSoccer" target="_blank" rel="noopener noreferrer"
+        <a href="https://www.youtube.com/@Foxsoccer/shorts" target="_blank" rel="noopener noreferrer"
           style={{ display:"block", textAlign:"center", padding:"16px",
             borderRadius:8, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)",
             color:"#ccff00", fontWeight:700, fontSize:"13px", textDecoration:"none" }}>
-          {failed ? "View latest posts from @FOXSoccer on X →" : "Loading latest post…"}
+          {failed ? "View latest shorts from FOX Soccer →" : "Loading latest short…"}
         </a>
       )}
     </div>
