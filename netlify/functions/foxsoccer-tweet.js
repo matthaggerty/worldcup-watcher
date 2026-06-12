@@ -32,10 +32,22 @@ export default async function handler() {
       new Date(a.created_at) > new Date(b.created_at) ? a : b
     );
 
+    const media = latest.extended_entities?.media || latest.entities?.media || [];
+    const photo = media.find((m) => m.type === "photo");
+    const video = media.find((m) => m.type === "video" || m.type === "animated_gif");
+    const videoThumb = video?.media_url_https;
+
+    let text = latest.full_text;
+    for (const m of media) {
+      if (m.url) text = text.replace(m.url, "").trim();
+    }
+
     const result = {
-      text: latest.full_text,
+      text,
       url: `https://x.com/${SCREEN_NAME}/status/${latest.id_str}`,
       createdAt: latest.created_at,
+      image: photo?.media_url_https || videoThumb || null,
+      isVideo: !!video,
     };
 
     cache = { data: result, fetchedAt: now };

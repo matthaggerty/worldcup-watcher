@@ -41,13 +41,29 @@ function TwitterTimeline() {
       </div>
       {tweet ? (
         <a href={tweet.url} target="_blank" rel="noopener noreferrer"
-          style={{ display:"block", padding:"14px 16px", borderRadius:8, textDecoration:"none",
+          style={{ display:"block", borderRadius:8, textDecoration:"none", overflow:"hidden",
             background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)" }}>
-          <div style={{ fontSize:"14px", color:"#e8f0fe", lineHeight:1.5, marginBottom:8 }}>
-            {tweet.text}
-          </div>
-          <div style={{ fontSize:"12px", color:"#6b8ab8" }}>
-            @FOXSoccer · {timeAgo(tweet.createdAt)}
+          {tweet.image && (
+            <div style={{ position:"relative" }}>
+              <img src={tweet.image} alt="" style={{ display:"block", width:"100%", maxHeight:300, objectFit:"cover" }} />
+              {tweet.isVideo && (
+                <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <div style={{ width:48, height:48, borderRadius:"50%", background:"rgba(0,0,0,0.55)",
+                    display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <div style={{ width:0, height:0, borderTop:"9px solid transparent", borderBottom:"9px solid transparent",
+                      borderLeft:"14px solid #fff", marginLeft:3 }} />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <div style={{ padding:"14px 16px" }}>
+            <div style={{ fontSize:"14px", color:"#e8f0fe", lineHeight:1.5, marginBottom:8 }}>
+              {tweet.text}
+            </div>
+            <div style={{ fontSize:"12px", color:"#6b8ab8" }}>
+              @FOXSoccer · {timeAgo(tweet.createdAt)}
+            </div>
           </div>
         </a>
       ) : (
