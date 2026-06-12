@@ -1,10 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
-// All kick-off times stored as ET (Eastern Time) 24h values
-// Times that cross midnight are stored as e.g. 24:00 = midnight, 25:00 = 1am next day
-// etH: hour in ET (24h), etM: minutes
-const mkMatch = (etH, etM, home, away, group, venue, broadcast, favorite, confidence, favNote) => ({
-  etH, etM, home, away, group, venue, broadcast, favorite, confidence, favNote
+const mkMatch = (etH, etM, home, away, group, venue, broadcast, favorite, confidence) => ({
+  etH, etM, home, away, group, venue, broadcast, favorite, confidence
 });
 
 const TZ_OFFSETS = { ET: 0, CT: -1, MT: -2, PT: -3 };
@@ -12,14 +9,11 @@ const TZ_OFFSETS = { ET: 0, CT: -1, MT: -2, PT: -3 };
 function convertTime(etH, etM, tz) {
   const offset = TZ_OFFSETS[tz];
   let h = etH + offset;
-  let m = etM;
-  const nextDay = h < 0 || (etH >= 0 && h >= 24 && etH < 24);
   h = ((h % 24) + 24) % 24;
   const period = h >= 12 ? "PM" : "AM";
   const h12 = h % 12 === 0 ? 12 : h % 12;
-  const mm = m === 0 ? "" : `:${String(m).padStart(2,"0")}`;
-  const late = (etH + offset) < 0 ? " (prev day)" : (etH + offset) >= 24 ? " (next day)" : "";
-  return `${h12}${mm} ${period} ${tz}${late}`;
+  const mm = etM === 0 ? "" : `:${String(etM).padStart(2,"0")}`;
+  return `${h12}${mm} ${period} ${tz}`;
 }
 
 const schedule = {
@@ -75,63 +69,65 @@ const schedule = {
       mkMatch(23,0,"🇵🇾 Paraguay","🇹🇷 Türkiye","D","San Francisco",["FS1"],"away","slight"),
     ],
     "Sat Jun 20": [
-      mkMatch(16,0,"🇨🇼 Curaçao","🇪🇨 Ecuador","E","Dallas",["FS1"],"away","strong"),
-      mkMatch(19,0,"🇩🇪 Germany","🇨🇮 Ivory Coast","E","Kansas City",["FOX"],"home","strong"),
-      mkMatch(18,0,"🇯🇵 Japan","🇹🇳 Tunisia","F","Miami",["FS1"],"home","slight"),
-      mkMatch(21,0,"🇳🇱 Netherlands","🇸🇪 Sweden","F","New York/NJ",["FOX"],"home","slight"),
+      mkMatch(13,0,"🇳🇱 Netherlands","🇸🇪 Sweden","F","Houston",["FOX"],"home","slight"),
+      mkMatch(16,0,"🇩🇪 Germany","🇨🇮 Ivory Coast","E","Toronto",["FOX"],"home","strong"),
+      mkMatch(23,0,"🇪🇨 Ecuador","🇨🇼 Curaçao","E","Kansas City",["FS1"],"home","strong"),
+      mkMatch(24,0,"🇹🇳 Tunisia","🇯🇵 Japan","F","Monterrey",["FS1"],"away","slight"),
     ],
     "Sun Jun 21": [
       mkMatch(12,0,"🇪🇸 Spain","🇸🇦 Saudi Arabia","H","Atlanta",["FOX"],"home","strong"),
-      mkMatch(15,0,"🇳🇿 New Zealand","🇧🇪 Belgium","G","Los Angeles",["FOX"],"away","strong"),
-      mkMatch(15,0,"🇺🇾 Uruguay","🇨🇻 Cape Verde","H","Boston",["FOX"],"home","strong"),
-      mkMatch(18,0,"🇪🇬 Egypt","🇮🇷 Iran","G","Seattle",["FS1"],"home","slight"),
+      mkMatch(15,0,"🇧🇪 Belgium","🇮🇷 Iran","G","Los Angeles",["FOX"],"home","strong"),
+      mkMatch(18,0,"🇺🇾 Uruguay","🇨🇻 Cape Verde","H","Miami",["FOX"],"home","strong"),
+      mkMatch(21,0,"🇳🇿 New Zealand","🇪🇬 Egypt","G","Vancouver",["FS1"],"away","slight"),
     ],
     "Mon Jun 22": [
-      mkMatch(12,0,"🇸🇳 Senegal","🇳🇴 Norway","I","Philadelphia",["FOX"],"even","slight"),
-      mkMatch(15,0,"🇫🇷 France","🇮🇶 Iraq","I","New York/NJ",["FOX"],"home","strong"),
-      mkMatch(21,0,"🇩🇿 Algeria","🇦🇹 Austria","J","Houston",["FS1"],"away","slight"),
-      mkMatch(22,0,"🇦🇷 Argentina","🇯🇴 Jordan","J","Dallas",["FOX"],"home","strong"),
+      mkMatch(13,0,"🇦🇷 Argentina","🇦🇹 Austria","J","Dallas",["FOX"],"even","slight"),
+      mkMatch(17,0,"🇫🇷 France","🇮🇶 Iraq","I","Philadelphia",["FOX"],"home","strong"),
+      mkMatch(20,0,"🇳🇴 Norway","🇸🇳 Senegal","I","New York/NJ",["FOX"],"even","slight"),
+      mkMatch(23,0,"🇯🇴 Jordan","🇩🇿 Algeria","J","San Francisco",["FS1"],"even","slight"),
     ],
     "Tue Jun 23": [
-      mkMatch(13,0,"🇨🇩 DR Congo","🇺🇿 Uzbekistan","K","Kansas City",["FOX"],"home","slight"),
-      mkMatch(16,0,"🇵🇹 Portugal","🇨🇴 Colombia","K","Kansas City",["FOX"],"home","slight"),
-      mkMatch(19,0,"🇭🇷 Croatia","🇬🇭 Ghana","L","Toronto",["FS1"],"home","slight"),
-      mkMatch(21,0,"🏴󠁧󠁢󠁥󠁮󠁧󠁿 England","🇵🇦 Panama","L","New York/NJ",["FOX"],"home","strong"),
+      mkMatch(13,0,"🇵🇹 Portugal","🇺🇿 Uzbekistan","K","Houston",["FOX"],"even","slight"),
+      mkMatch(16,0,"🏴󠁧󠁢󠁥󠁮󠁧󠁿 England","🇬🇭 Ghana","L","Boston",["FS1"],"even","slight"),
+      mkMatch(19,0,"🇵🇦 Panama","🇭🇷 Croatia","L","Toronto",["FOX"],"even","slight"),
+      mkMatch(22,0,"🇨🇴 Colombia","🇨🇩 DR Congo","K","Guadalajara",["FS1"],"even","slight"),
     ],
     "Wed Jun 24": [
-      mkMatch(15,0,"🇿🇦 S. Africa","🇰🇷 S. Korea","A","Miami",["FS1"],"away","slight"),
-      mkMatch(15,0,"🇲🇽 Mexico","🇨🇿 Czechia","A","Guadalajara",["FOX"],"home","slight"),
+      mkMatch(15,0,"🇨🇭 Switzerland","🇨🇦 Canada","B","Vancouver",["FOX"],"even","slight"),
+      mkMatch(15,0,"🇧🇦 Bosnia","🇶🇦 Qatar","B","Seattle",["FOX"],"home","strong"),
+      mkMatch(18,0,"🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland","🇧🇷 Brazil","C","Miami",["FOX"],"away","strong"),
       mkMatch(18,0,"🇲🇦 Morocco","🇭🇹 Haiti","C","Atlanta",["FS1"],"home","strong"),
-      mkMatch(18,0,"🇧🇷 Brazil","🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland","C","Los Angeles",["FOX"],"home","strong"),
+      mkMatch(21,0,"🇨🇿 Czechia","🇲🇽 Mexico","A","Mexico City",["FOX"],"away","slight"),
+      mkMatch(21,0,"🇿🇦 S. Africa","🇰🇷 S. Korea","A","Monterrey",["FS1"],"away","slight"),
     ],
     "Thu Jun 25": [
-      mkMatch(15,0,"🇧🇦 Bosnia","🇶🇦 Qatar","B","Philadelphia",["FOX"],"home","strong"),
-      mkMatch(15,0,"🇨🇭 Switzerland","🇨🇦 Canada","B","Vancouver",["FOX"],"even","slight"),
-      mkMatch(18,0,"🇦🇺 Australia","🇵🇾 Paraguay","D","Seattle",["FS1"],"even","slight"),
-      mkMatch(18,0,"🇹🇷 Türkiye","🇺🇸 USA","D","San Francisco",["FOX"],"away","slight"),
+      mkMatch(16,0,"🇪🇨 Ecuador","🇩🇪 Germany","E","New York/NJ",["FOX"],"away","strong"),
+      mkMatch(16,0,"🇨🇼 Curaçao","🇨🇮 Ivory Coast","E","Philadelphia",["FOX"],"away","strong"),
+      mkMatch(19,0,"🇯🇵 Japan","🇸🇪 Sweden","F","Dallas",["FS1"],"even","slight"),
+      mkMatch(19,0,"🇹🇳 Tunisia","🇳🇱 Netherlands","F","Kansas City",["FS1"],"away","strong"),
+      mkMatch(22,0,"🇹🇷 Türkiye","🇺🇸 USA","D","Los Angeles",["FOX"],"away","slight"),
+      mkMatch(22,0,"🇵🇾 Paraguay","🇦🇺 Australia","D","San Francisco",["FS1"],"even","slight"),
     ],
     "Fri Jun 26": [
-      mkMatch(15,0,"🇪🇨 Ecuador","🇩🇪 Germany","E","Houston",["FOX"],"away","strong"),
-      mkMatch(15,0,"🇨🇮 Ivory Coast","🇨🇼 Curaçao","E","Dallas",["FOX"],"home","strong"),
-      mkMatch(18,0,"🇸🇪 Sweden","🇯🇵 Japan","F","Boston",["FS1"],"even","slight"),
-      mkMatch(18,0,"🇹🇳 Tunisia","🇳🇱 Netherlands","F","Atlanta",["FS1"],"away","strong"),
+      mkMatch(15,0,"🇳🇴 Norway","🇫🇷 France","I","Boston",["FOX"],"even","slight"),
+      mkMatch(15,0,"🇸🇳 Senegal","🇮🇶 Iraq","I","Toronto",["FS1"],"even","slight"),
+      mkMatch(20,0,"🇨🇻 Cape Verde","🇸🇦 Saudi Arabia","H","Houston",["FOX"],"even","slight"),
+      mkMatch(20,0,"🇺🇾 Uruguay","🇪🇸 Spain","H","Guadalajara",["FS1"],"even","slight"),
+      mkMatch(23,0,"🇪🇬 Egypt","🇮🇷 Iran","G","Seattle",["FS1"],"home","slight"),
+      mkMatch(23,0,"🇳🇿 New Zealand","🇧🇪 Belgium","G","Vancouver",["FOX"],"away","strong"),
     ],
     "Sat Jun 27": [
-      mkMatch(15,0,"🇸🇦 Saudi Arabia","🇪🇸 Spain","H","Miami",["FOX"],"away","strong"),
-      mkMatch(15,0,"🇨🇻 Cape Verde","🇺🇾 Uruguay","H","Kansas City",["FS1"],"away","strong"),
-      mkMatch(18,0,"🇮🇷 Iran","🇧🇪 Belgium","G","New York/NJ",["FOX"],"away","strong"),
-      mkMatch(18,0,"🇳🇿 New Zealand","🇪🇬 Egypt","G","Los Angeles",["FS1"],"away","slight"),
-      mkMatch(19,0,"🇵🇦 Panama","🇬🇭 Ghana","L","Toronto",["FS1"],"away","slight"),
-      mkMatch(21,0,"🏴󠁧󠁢󠁥󠁮󠁧󠁿 England","🇭🇷 Croatia","L","New York/NJ",["FOX"],"home","slight"),
+      mkMatch(17,0,"🇵🇦 Panama","🏴󠁧󠁢󠁥󠁮󠁧󠁿 England","L","New York/NJ",["FOX"],"away","strong"),
+      mkMatch(17,0,"🇭🇷 Croatia","🇬🇭 Ghana","L","Philadelphia",["FS1"],"home","slight"),
+      mkMatch(19,30,"🇨🇴 Colombia","🇵🇹 Portugal","K","Miami",["FOX"],"away","slight"),
+      mkMatch(19,30,"🇨🇩 DR Congo","🇺🇿 Uzbekistan","K","Atlanta",["FOX"],"home","slight"),
+      mkMatch(22,0,"🇩🇿 Algeria","🇦🇹 Austria","J","Kansas City",["FS1"],"away","slight"),
+      mkMatch(22,0,"🇯🇴 Jordan","🇦🇷 Argentina","J","Dallas",["FOX"],"away","strong"),
     ],
   },
   "KNOCKOUT STAGE": {
-    "Round of 32 (Jun 28–Jul 3)": [
-      mkMatch(15,0,"TBD","TBD","R32","Various",["FOX","FS1"],null,null),
-    ],
-    "Round of 16 (Jul 4–7)": [
-      mkMatch(15,0,"TBD","TBD","R16","Various",["FOX","FS1"],null,null),
-    ],
+    "Round of 32 (Jun 28–Jul 3)": [mkMatch(15,0,"TBD","TBD","R32","Various",["FOX","FS1"],null,null)],
+    "Round of 16 (Jul 4–7)":      [mkMatch(15,0,"TBD","TBD","R16","Various",["FOX","FS1"],null,null)],
     "Quarterfinals (Jul 9–11)": [
       mkMatch(15,0,"TBD","TBD","QF","Boston",["FOX"],null,null),
       mkMatch(15,0,"TBD","TBD","QF","Los Angeles",["FOX"],null,null),
@@ -142,12 +138,8 @@ const schedule = {
       mkMatch(15,0,"TBD","TBD","SF","Dallas",["FOX"],null,null),
       mkMatch(15,0,"TBD","TBD","SF","Atlanta",["FOX"],null,null),
     ],
-    "3rd Place (Jul 18)": [
-      mkMatch(15,0,"TBD","TBD","3P","Miami",["FOX"],null,null),
-    ],
-    "🏆 Final (Jul 19)": [
-      mkMatch(15,0,"TBD","TBD","FIN","New York/NJ",["FOX"],null,null),
-    ],
+    "3rd Place (Jul 18)": [mkMatch(15,0,"TBD","TBD","3P","Miami",["FOX"],null,null)],
+    "🏆 Final (Jul 19)":  [mkMatch(15,0,"TBD","TBD","FIN","New York/NJ",["FOX"],null,null)],
   },
 };
 
@@ -164,13 +156,38 @@ const broadcastStyle = {
   TUBI: { bg:"#00e364", color:"#000", label:"TUBI" },
 };
 
+// Extract all unique teams from the group stage
+function getAllTeams() {
+  const teams = new Set();
+  Object.values(schedule["GROUP STAGE"]).forEach(day =>
+    day.forEach(m => { teams.add(m.home); teams.add(m.away); })
+  );
+  return ["🌍 All Teams", ...Array.from(teams).sort((a,b) => {
+    const nameA = a.replace(/^[\p{Emoji}\s]+/u,"").trim();
+    const nameB = b.replace(/^[\p{Emoji}\s]+/u,"").trim();
+    return nameA.localeCompare(nameB);
+  })];
+}
+
+function getMatchesForCountry(country) {
+  const results = [];
+  Object.entries(schedule["GROUP STAGE"]).forEach(([day, matches]) => {
+    matches.forEach(m => {
+      if (m.home === country || m.away === country) {
+        results.push({ ...m, day });
+      }
+    });
+  });
+  return results;
+}
+
 function FavBadge({ match }) {
   if (!match.favorite || match.favorite === "even") {
     return <div style={{ fontSize:"10px", color:"#6b8ab8", fontStyle:"italic", textAlign:"center", minWidth:70 }}>Even match</div>;
   }
   const isHome = match.favorite === "home";
   const raw = isHome ? match.home : match.away;
-  const name = raw.replace(/^[\p{Emoji}\s]+/u, "").trim();
+  const name = raw.replace(/^[\p{Emoji}\s]+/u,"").trim();
   const color = match.confidence === "strong" ? "#f1c40f" : "#8aabcc";
   return (
     <div style={{ minWidth:70, textAlign:"center" }}>
@@ -185,14 +202,18 @@ function FavBadge({ match }) {
   );
 }
 
-function MatchCard({ m, tz, dayLabel }) {
+function MatchCard({ m, tz, showDay }) {
   return (
     <div style={{
       background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)",
       borderLeft:`3px solid ${groupColors[m.group]||"#e8c96a"}`,
       borderRadius:8, padding:"12px 14px", marginBottom:10,
     }}>
-      {/* Row 1: group badge + teams + fav */}
+      {showDay && (
+        <div style={{ fontSize:"10px", color:"#e8c96a", fontWeight:700, letterSpacing:"1px", marginBottom:6 }}>
+          {m.day}
+        </div>
+      )}
       <div style={{ display:"flex", alignItems:"center", gap:10 }}>
         <div style={{ width:26, height:26, borderRadius:"50%", flexShrink:0,
           background:groupColors[m.group]||"#e8c96a", display:"flex", alignItems:"center",
@@ -205,15 +226,11 @@ function MatchCard({ m, tz, dayLabel }) {
             <span style={{ fontSize:"10px", color:"#4a6a8a", fontWeight:600 }}>vs</span>
             <span style={{ fontSize:"14px", fontWeight:700 }}>{m.away}</span>
           </div>
-          <div style={{ marginTop:3, fontSize:"11px", color:"#5a7a9a" }}>
-            {dayLabel ? `${dayLabel} · ` : ""}📍 {m.venue}
-          </div>
+          <div style={{ marginTop:3, fontSize:"11px", color:"#5a7a9a" }}>📍 {m.venue}</div>
         </div>
         {m.favorite !== null && <FavBadge match={m} />}
         {m.favorite === null && <div style={{ minWidth:70, textAlign:"center", fontSize:"10px", color:"#4a6a8a" }}>TBD</div>}
       </div>
-
-      {/* Row 2: time + broadcast chips */}
       <div style={{ marginTop:8, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
         <span style={{ fontSize:"14px", fontWeight:700, color:"#e8c96a" }}>
           {m.etH != null ? convertTime(m.etH, m.etM, tz) : "TBD"}
@@ -235,32 +252,37 @@ function MatchCard({ m, tz, dayLabel }) {
 }
 
 const TZ_LIST = ["ET","CT","MT","PT"];
-
-const cleanName = raw => raw.replace(/^[\p{Emoji}\s]+/u, "").trim();
-
-// All countries appearing in the group stage, sorted alphabetically
-const ALL_COUNTRIES = Array.from(new Set(
-  Object.values(schedule["GROUP STAGE"]).flat().flatMap(m => [m.home, m.away])
-)).filter(name => cleanName(name) !== "TBD")
-  .sort((a, b) => cleanName(a).localeCompare(cleanName(b)));
+const ALL_TEAMS_LABEL = "🌍 All Teams";
 
 export default function WorldCupSchedule() {
   const [activeStage, setActiveStage] = useState("GROUP STAGE");
   const [activeDay,   setActiveDay]   = useState(Object.keys(schedule["GROUP STAGE"])[0]);
-  const [myCountry,   setMyCountry]   = useState("");
   const [tz,          setTz]          = useState("ET");
+  const [selectedTeam, setSelectedTeam] = useState(ALL_TEAMS_LABEL);
 
-  const stages = Object.keys(schedule);
-  const days    = Object.keys(schedule[activeStage]);
-  const matches = schedule[activeStage][activeDay] || [];
+  const allTeams = useMemo(() => getAllTeams(), []);
+  const stages   = Object.keys(schedule);
+  const days     = Object.keys(schedule[activeStage]);
 
-  // Matches involving the user's chosen country, across the whole tournament
-  const myMatches = !myCountry ? [] : Object.entries(schedule).flatMap(([stageName, stageDays]) =>
-    Object.entries(stageDays).flatMap(([dayName, dayMatches]) =>
-      dayMatches
-        .filter(m => cleanName(m.home) === myCountry || cleanName(m.away) === myCountry)
-        .map(m => ({ ...m, stageName, dayName }))
-    )
+  const isTeamFiltered = selectedTeam !== ALL_TEAMS_LABEL;
+  const teamMatches    = useMemo(() =>
+    isTeamFiltered ? getMatchesForCountry(selectedTeam) : [],
+    [selectedTeam, isTeamFiltered]
+  );
+  const dayMatches = schedule[activeStage]?.[activeDay] || [];
+
+  const TZToggle = () => (
+    <div style={{ display:"flex", background:"rgba(0,0,0,0.3)", borderRadius:8, border:"1px solid rgba(255,255,255,0.1)", overflow:"hidden", flexShrink:0 }}>
+      {TZ_LIST.map(t => (
+        <button key={t} onClick={() => setTz(t)}
+          style={{ padding:"4px 10px", border:"none", cursor:"pointer", fontSize:"11px", fontWeight:700,
+            background: tz===t ? "#e8c96a" : "transparent",
+            color: tz===t ? "#1a1000" : "#6b8ab8",
+            borderRight: t !== "PT" ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
+          {t}
+        </button>
+      ))}
+    </div>
   );
 
   return (
@@ -275,51 +297,39 @@ export default function WorldCupSchedule() {
         </div>
       </div>
 
-      {/* My Country Selector + TZ toggle on same row */}
-      <div style={{ padding:"10px 16px 0", display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, flexWrap:"wrap" }}>
-        <select value={myCountry} onChange={e => setMyCountry(e.target.value)}
-          style={{ padding:"5px 10px", borderRadius:8, border:"1px solid rgba(255,255,255,0.15)",
-            background:"rgba(0,0,0,0.3)", color: myCountry ? "#e8c96a" : "#8aabcc",
-            fontSize:"12px", fontWeight:700, cursor:"pointer" }}>
-          <option value="">⭐ Select your country…</option>
-          {ALL_COUNTRIES.map(c => (
-            <option key={c} value={cleanName(c)} style={{ color:"#000" }}>{c}</option>
+      {/* Country selector + TZ toggle */}
+      <div style={{ padding:"12px 16px", display:"flex", gap:10, alignItems:"center", flexWrap:"wrap", justifyContent:"space-between", borderBottom:"1px solid rgba(255,255,255,0.07)" }}>
+        <select
+          value={selectedTeam}
+          onChange={e => setSelectedTeam(e.target.value)}
+          style={{
+            flex:1, minWidth:180, maxWidth:280,
+            background:"rgba(255,255,255,0.06)", color:"#e8f0fe",
+            border:"1px solid rgba(255,255,255,0.15)", borderRadius:8,
+            padding:"7px 12px", fontSize:"13px", fontWeight:600, cursor:"pointer",
+            appearance:"none", backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b8ab8' d='M6 8L0 0h12z'/%3E%3C/svg%3E\")",
+            backgroundRepeat:"no-repeat", backgroundPosition:"right 12px center",
+          }}>
+          {allTeams.map(t => (
+            <option key={t} value={t} style={{ background:"#1a2d4f", color:"#e8f0fe" }}>{t}</option>
           ))}
         </select>
-
-        {/* TZ Toggle */}
-        <div style={{ display:"flex", background:"rgba(0,0,0,0.3)", borderRadius:8, border:"1px solid rgba(255,255,255,0.1)", overflow:"hidden", flexShrink:0 }}>
-          {TZ_LIST.map(t => (
-            <button key={t} onClick={() => setTz(t)}
-              style={{ padding:"4px 10px", border:"none", cursor:"pointer", fontSize:"11px", fontWeight:700,
-                background: tz===t ? "#e8c96a" : "transparent",
-                color: tz===t ? "#1a1000" : "#6b8ab8",
-                borderRight: t !== "PT" ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
-              {t}
-            </button>
-          ))}
-        </div>
+        <TZToggle />
       </div>
 
-      {/* My Country Schedule */}
-      {myCountry && (
-        <div style={{ padding:"14px 16px 8px" }}>
-          <div style={{ fontSize:"11px", fontWeight:700, letterSpacing:"2px", color:"#e8c96a", marginBottom:10 }}>
-            {myCountry.toUpperCase()}'S SCHEDULE
+      {/* Country schedule view */}
+      {isTeamFiltered ? (
+        <div style={{ padding:"16px 16px 24px" }}>
+          <div style={{ fontSize:"14px", fontWeight:700, color:"#e8c96a", marginBottom:14, letterSpacing:"0.5px" }}>
+            {selectedTeam} — Group Stage Schedule
           </div>
-          {myMatches.length === 0 && (
-            <div style={{ textAlign:"center", padding:40, color:"#4a6a8a", fontSize:14 }}>
-              No scheduled matches found for {myCountry} yet
-            </div>
+          {teamMatches.length === 0 ? (
+            <div style={{ textAlign:"center", padding:40, color:"#4a6a8a" }}>No matches found</div>
+          ) : (
+            teamMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={true} />)
           )}
-          {myMatches.map((m, i) => (
-            <MatchCard key={i} m={m} tz={tz} dayLabel={m.dayName} />
-          ))}
         </div>
-      )}
-
-      {/* Browse all matches by stage/day (hidden once a country is selected) */}
-      {!myCountry && (
+      ) : (
         <>
           {/* Stage Tabs */}
           <div style={{ display:"flex", borderBottom:"1px solid rgba(255,255,255,0.1)", background:"rgba(0,0,0,0.3)" }}>
@@ -351,34 +361,32 @@ export default function WorldCupSchedule() {
 
           {/* Match Cards */}
           <div style={{ padding:"0 16px 8px" }}>
-            {matches.map((m, i) => (
-              <MatchCard key={i} m={m} tz={tz} />
+            {dayMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={false} />)}
+          </div>
+
+          {/* Key Dates */}
+          <div style={{ margin:"0 16px 24px", background:"rgba(232,201,106,0.05)", border:"1px solid rgba(232,201,106,0.15)", borderRadius:8, padding:"14px 16px" }}>
+            <div style={{ fontSize:"11px", fontWeight:700, letterSpacing:"2px", color:"#e8c96a", marginBottom:10 }}>KEY DATES</div>
+            {[
+              ["Jun 11","Tournament Opens — Mexico City"],
+              ["Jun 28–Jul 3","Round of 32"],
+              ["Jul 4–7","Round of 16"],
+              ["Jul 9–11","Quarterfinals"],
+              ["Jul 14–15","Semifinals"],
+              ["Jul 18","3rd Place Match — Miami"],
+              ["Jul 19","🏆 Final — New York/NJ · 3:00 PM ET · FOX"],
+            ].map(([d,l]) => (
+              <div key={d} style={{ display:"flex", justifyContent:"space-between", padding:"4px 0", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
+                <span style={{ fontSize:"12px", fontWeight:600, color:"#e8c96a" }}>{d}</span>
+                <span style={{ fontSize:"12px", color:"#6b8ab8" }}>{l}</span>
+              </div>
             ))}
+            <div style={{ marginTop:10, fontSize:"10px", color:"#4a6a8a" }}>
+              ★ Favorite confidence: ●●● = strong · ●●○ = slight
+            </div>
           </div>
         </>
       )}
-
-      {/* Key Dates */}
-      <div style={{ margin:"0 16px 24px", background:"rgba(232,201,106,0.05)", border:"1px solid rgba(232,201,106,0.15)", borderRadius:8, padding:"14px 16px" }}>
-        <div style={{ fontSize:"11px", fontWeight:700, letterSpacing:"2px", color:"#e8c96a", marginBottom:10 }}>KEY DATES</div>
-        {[
-          ["Jun 11","Tournament Opens — Mexico City"],
-          ["Jun 28–Jul 3","Round of 32"],
-          ["Jul 4–7","Round of 16"],
-          ["Jul 9–11","Quarterfinals"],
-          ["Jul 14–15","Semifinals"],
-          ["Jul 18","3rd Place Match — Miami"],
-          ["Jul 19","🏆 Final — New York/NJ · 3:00 PM ET · FOX"],
-        ].map(([d,l]) => (
-          <div key={d} style={{ display:"flex", justifyContent:"space-between", padding:"4px 0", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
-            <span style={{ fontSize:"12px", fontWeight:600, color:"#e8c96a" }}>{d}</span>
-            <span style={{ fontSize:"12px", color:"#6b8ab8" }}>{l}</span>
-          </div>
-        ))}
-        <div style={{ marginTop:10, fontSize:"10px", color:"#4a6a8a" }}>
-          ★ Favorite confidence: ●●● = strong · ●●○ = slight
-        </div>
-      </div>
     </div>
   );
 }
