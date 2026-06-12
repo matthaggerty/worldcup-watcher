@@ -492,9 +492,16 @@ const ALL_GROUPS_LABEL = "🏆 All Groups";
 const GROUPS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
 const GROUP_OPTIONS = [ALL_GROUPS_LABEL, ...GROUPS.map(g => `Group ${g}`)];
 
+function getTodayDayKey(days) {
+  const todayKey = new Date()
+    .toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+    .replace(",", "");
+  return days.includes(todayKey) ? todayKey : days[0];
+}
+
 export default function WorldCupSchedule() {
   const [activeStage, setActiveStage] = useState("GROUP STAGE");
-  const [activeDay,   setActiveDay]   = useState(Object.keys(schedule["GROUP STAGE"])[0]);
+  const [activeDay,   setActiveDay]   = useState(() => getTodayDayKey(Object.keys(schedule["GROUP STAGE"])));
   const [tz,          setTz]          = useState("ET");
   const [selectedTeam, setSelectedTeam] = useState(ALL_TEAMS_LABEL);
   const [selectedGroup, setSelectedGroup] = useState(ALL_GROUPS_LABEL);
