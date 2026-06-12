@@ -532,12 +532,25 @@ export default function WorldCupSchedule() {
     activeDayRef.current?.scrollIntoView({ behavior:"smooth", inline:"center", block:"nearest" });
   }, [activeDay]);
 
-  const touchStartX = useRef(null);
-  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const touchStart = useRef(null);
+  const isHorizontalSwipe = useRef(false);
+  const handleTouchStart = (e) => {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    isHorizontalSwipe.current = false;
+  };
+  const handleTouchMove = (e) => {
+    if (!touchStart.current) return;
+    const deltaX = e.touches[0].clientX - touchStart.current.x;
+    const deltaY = e.touches[0].clientY - touchStart.current.y;
+    if (!isHorizontalSwipe.current && Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+      isHorizontalSwipe.current = true;
+    }
+    if (isHorizontalSwipe.current) e.preventDefault();
+  };
   const handleTouchEnd = (e) => {
-    if (touchStartX.current == null) return;
-    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
-    touchStartX.current = null;
+    if (!touchStart.current) return;
+    const deltaX = e.changedTouches[0].clientX - touchStart.current.x;
+    touchStart.current = null;
     const SWIPE_THRESHOLD = 50;
     if (deltaX <= -SWIPE_THRESHOLD && dayIndex < days.length - 1) {
       setActiveDay(days[dayIndex + 1]);
@@ -575,7 +588,7 @@ export default function WorldCupSchedule() {
   );
 
   return (
-    <div style={{ minHeight:"100vh", background:"linear-gradient(135deg,#0a0a0a 0%,#121212 50%,#000000 100%)", fontFamily:"'Segoe UI',system-ui,sans-serif", color:"#e8f0fe" }}>
+    <div style={{ minHeight:"100vh", overflowX:"hidden", background:"linear-gradient(135deg,#0a0a0a 0%,#121212 50%,#000000 100%)", fontFamily:"'Segoe UI',system-ui,sans-serif", color:"#e8f0fe" }}>
 
       {/* Header */}
       <div style={{ position:"relative", background:"#000", padding:"24px 20px 18px", overflow:"hidden" }}>
@@ -691,7 +704,8 @@ export default function WorldCupSchedule() {
           </div>
 
           {/* Match Cards */}
-          <div style={{ padding:"0 16px 24px" }} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+          <div style={{ padding:"0 16px 24px", touchAction:"pan-y" }}
+            onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
             {dayMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={false} liveScores={liveScores} />)}
             <TwitterTimeline />
           </div>
