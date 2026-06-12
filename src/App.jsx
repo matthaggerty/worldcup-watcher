@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 
 const mkMatch = (etH, etM, home, away, group, venue, broadcast, favorite, confidence) => ({
   etH, etM, home, away, group, venue, broadcast, favorite, confidence
@@ -528,8 +528,16 @@ export default function WorldCupSchedule() {
   const dayIndex   = days.indexOf(activeDay);
 
   const activeDayRef = useRef(null);
-  useEffect(() => {
-    activeDayRef.current?.scrollIntoView({ behavior:"smooth", inline:"center", block:"nearest" });
+  const dayScrollRef = useRef(null);
+  useLayoutEffect(() => {
+    const container = dayScrollRef.current;
+    const button = activeDayRef.current;
+    if (!container || !button) return;
+    const containerRect = container.getBoundingClientRect();
+    const buttonRect = button.getBoundingClientRect();
+    const paddingLeft = parseFloat(getComputedStyle(container).paddingLeft) || 0;
+    const delta = (buttonRect.left - containerRect.left) - paddingLeft;
+    container.scrollTo({ left: container.scrollLeft + delta, behavior:"auto" });
   }, [activeDay]);
 
   const touchStart = useRef(null);
@@ -689,7 +697,7 @@ export default function WorldCupSchedule() {
       ) : (
         <>
           {/* Day Selector */}
-          <div style={{ padding:"10px 16px", display:"flex", gap:6, overflowX:"auto", WebkitOverflowScrolling:"touch", scrollbarWidth:"none", borderBottom:"1px solid rgba(255,255,255,0.07)" }}>
+          <div ref={dayScrollRef} style={{ padding:"10px 16px", display:"flex", gap:6, overflowX:"auto", WebkitOverflowScrolling:"touch", scrollbarWidth:"none", borderBottom:"1px solid rgba(255,255,255,0.07)" }}>
             {days.map(d => (
               <button key={d} ref={activeDay===d ? activeDayRef : null} onClick={() => setActiveDay(d)}
                 style={{ whiteSpace:"nowrap", padding:"5px 11px",
