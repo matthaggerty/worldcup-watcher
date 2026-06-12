@@ -15,7 +15,8 @@ function timeAgo(iso) {
 }
 
 function TwitterTimeline() {
-  const [short, setShort] = useState(null);
+  const [shorts, setShorts] = useState(null);
+  const [index, setIndex] = useState(0);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -30,7 +31,7 @@ function TwitterTimeline() {
         .then((data) => {
           if (cancelled) return;
           if (data.error) throw new Error(data.error);
-          setShort(data);
+          setShorts(data.shorts || []);
         })
         .catch(() => { if (!cancelled) setFailed(true); });
     };
@@ -40,16 +41,33 @@ function TwitterTimeline() {
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
+  const short = shorts && shorts.length ? shorts[index % shorts.length] : null;
+
   return (
     <div style={{ marginTop:16 }}>
-      <div style={{ fontSize:"12px", fontWeight:800, letterSpacing:"1px", color:"#8aabcc", marginBottom:10 }}>
-        LATEST FROM FOX SOCCER
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+        <div style={{ fontSize:"12px", fontWeight:800, letterSpacing:"1px", color:"#8aabcc" }}>
+          LATEST FROM FOX SOCCER
+        </div>
+        {shorts && shorts.length > 1 && (
+          <button
+            onClick={() => setIndex((i) => (i + 1) % shorts.length)}
+            style={{
+              display:"flex", alignItems:"center", gap:4,
+              background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)",
+              borderRadius:6, color:"#ccff00", fontWeight:700, fontSize:"12px",
+              padding:"4px 10px", cursor:"pointer",
+            }}>
+            Next ›
+          </button>
+        )}
       </div>
       {short ? (
         <div style={{ borderRadius:8, overflow:"hidden",
           background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)" }}>
           <div style={{ position:"relative", width:"100%", aspectRatio:"9 / 16", background:"#000" }}>
             <iframe
+              key={short.videoId}
               src={`https://www.youtube.com/embed/${short.videoId}`}
               title={short.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
