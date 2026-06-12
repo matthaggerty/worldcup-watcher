@@ -1,40 +1,37 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 const mkMatch = (etH, etM, home, away, group, venue, broadcast, favorite, confidence) => ({
   etH, etM, home, away, group, venue, broadcast, favorite, confidence
 });
 
+function timeAgo(isoOrTwitterDate) {
+  const diffMs = Date.now() - new Date(isoOrTwitterDate).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
 function TwitterTimeline() {
-  const containerRef = useRef(null);
-  const [embedFailed, setEmbedFailed] = useState(false);
+  const [tweet, setTweet] = useState(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-
-    const tryLoad = () => {
-      if (!window.twttr?.widgets || !containerRef.current) return;
-      window.twttr.widgets.load(containerRef.current).then((els) => {
-        if (!cancelled && (!els || els.length === 0)) setEmbedFailed(true);
-      });
-    };
-
-    if (window.twttr?.widgets) {
-      tryLoad();
-    } else {
-      const script = document.createElement("script");
-      script.src = "https://platform.twitter.com/widgets.js";
-      script.async = true;
-      script.onload = tryLoad;
-      document.body.appendChild(script);
-    }
-
-    const timeout = setTimeout(() => {
-      if (!cancelled && containerRef.current && !containerRef.current.querySelector("iframe")) {
-        setEmbedFailed(true);
-      }
-    }, 4000);
-
-    return () => { cancelled = true; clearTimeout(timeout); };
+    fetch("/.netlify/functions/foxsoccer-tweet")
+      .then((res) => {
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
+        if (data.error) throw new Error(data.error);
+        setTweet(data);
+      })
+      .catch(() => { if (!cancelled) setFailed(true); });
+    return () => { cancelled = true; };
   }, []);
 
   return (
@@ -42,24 +39,23 @@ function TwitterTimeline() {
       <div style={{ fontSize:"12px", fontWeight:800, letterSpacing:"1px", color:"#8aabcc", marginBottom:10 }}>
         LATEST FROM @FOXSOCCER
       </div>
-      <div ref={containerRef} style={{ borderRadius:8, overflow:"hidden", background:"rgba(255,255,255,0.04)",
-        border:"1px solid rgba(255,255,255,0.08)", display: embedFailed ? "none" : "block" }}>
-        <a
-          className="twitter-timeline"
-          data-theme="dark"
-          data-tweet-limit="1"
-          data-chrome="noheader nofooter noborders transparent"
-          href="https://twitter.com/FOXSoccer"
-        >
-          Posts by @FOXSoccer
+      {tweet ? (
+        <a href={tweet.url} target="_blank" rel="noopener noreferrer"
+          style={{ display:"block", padding:"14px 16px", borderRadius:8, textDecoration:"none",
+            background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)" }}>
+          <div style={{ fontSize:"14px", color:"#e8f0fe", lineHeight:1.5, marginBottom:8 }}>
+            {tweet.text}
+          </div>
+          <div style={{ fontSize:"12px", color:"#6b8ab8" }}>
+            @FOXSoccer · {timeAgo(tweet.createdAt)}
+          </div>
         </a>
-      </div>
-      {embedFailed && (
+      ) : (
         <a href="https://x.com/FOXSoccer" target="_blank" rel="noopener noreferrer"
           style={{ display:"block", textAlign:"center", padding:"16px",
             borderRadius:8, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)",
             color:"#e8c96a", fontWeight:700, fontSize:"13px", textDecoration:"none" }}>
-          View latest posts from @FOXSoccer on X →
+          {failed ? "View latest posts from @FOXSoccer on X →" : "Loading latest post…"}
         </a>
       )}
     </div>
