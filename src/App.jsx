@@ -494,7 +494,7 @@ const GROUP_OPTIONS = [ALL_GROUPS_LABEL, ...GROUPS.map(g => `Group ${g}`)];
 
 function getTodayDayKey(days) {
   const todayKey = new Date()
-    .toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+    .toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" })
     .replace(",", "");
   return days.includes(todayKey) ? todayKey : days[0];
 }
