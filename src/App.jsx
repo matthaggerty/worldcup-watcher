@@ -4,6 +4,38 @@ const mkMatch = (etH, etM, home, away, group, venue, broadcast, favorite, confid
   etH, etM, home, away, group, venue, broadcast, favorite, confidence
 });
 
+function TwitterTimeline() {
+  useEffect(() => {
+    if (window.twttr?.widgets) {
+      window.twttr.widgets.load();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://platform.twitter.com/widgets.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  return (
+    <div style={{ padding:"0 16px 24px" }}>
+      <div style={{ fontSize:"12px", fontWeight:800, letterSpacing:"1px", color:"#8aabcc", marginBottom:10 }}>
+        LATEST FROM @FOXSOCCER
+      </div>
+      <div style={{ borderRadius:8, overflow:"hidden", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)" }}>
+        <a
+          className="twitter-timeline"
+          data-theme="dark"
+          data-tweet-limit="1"
+          data-chrome="noheader nofooter noborders transparent"
+          href="https://twitter.com/FOXSoccer"
+        >
+          Posts by @FOXSoccer
+        </a>
+      </div>
+    </div>
+  );
+}
+
 const TZ_OFFSETS = { ET: 0, CT: -1, MT: -2, PT: -3 };
 
 function convertTime(etH, etM, tz) {
@@ -536,6 +568,8 @@ export default function WorldCupSchedule() {
           <div style={{ padding:"0 16px 24px" }}>
             {dayMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={false} liveScores={liveScores} />)}
           </div>
+
+          <TwitterTimeline />
         </>
       )}
     </div>
