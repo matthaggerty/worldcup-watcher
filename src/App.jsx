@@ -533,30 +533,8 @@ export default function WorldCupSchedule() {
           </div>
 
           {/* Match Cards */}
-          <div style={{ padding:"0 16px 8px" }}>
+          <div style={{ padding:"0 16px 24px" }}>
             {dayMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={false} liveScores={liveScores} />)}
-          </div>
-
-          {/* Key Dates */}
-          <div style={{ margin:"0 16px 24px", background:"rgba(232,201,106,0.05)", border:"1px solid rgba(232,201,106,0.15)", borderRadius:8, padding:"14px 16px" }}>
-            <div style={{ fontSize:"11px", fontWeight:700, letterSpacing:"2px", color:"#e8c96a", marginBottom:10 }}>KEY DATES</div>
-            {[
-              ["Jun 11","Tournament Opens — Mexico City"],
-              ["Jun 28–Jul 3","Round of 32"],
-              ["Jul 4–7","Round of 16"],
-              ["Jul 9–11","Quarterfinals"],
-              ["Jul 14–15","Semifinals"],
-              ["Jul 18","3rd Place Match — Miami"],
-              ["Jul 19","🏆 Final — New York/NJ · 3:00 PM ET · FOX"],
-            ].map(([d,l]) => (
-              <div key={d} style={{ display:"flex", justifyContent:"space-between", padding:"4px 0", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
-                <span style={{ fontSize:"12px", fontWeight:600, color:"#e8c96a" }}>{d}</span>
-                <span style={{ fontSize:"12px", color:"#6b8ab8" }}>{l}</span>
-              </div>
-            ))}
-            <div style={{ marginTop:10, fontSize:"10px", color:"#4a6a8a" }}>
-              ★ Favorite confidence: ●●● = strong · ●●○ = slight
-            </div>
           </div>
         </>
       )}
