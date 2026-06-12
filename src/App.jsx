@@ -20,18 +20,24 @@ function TwitterTimeline() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/.netlify/functions/foxsoccer-tweet")
-      .then((res) => {
-        if (!res.ok) throw new Error(`status ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        if (cancelled) return;
-        if (data.error) throw new Error(data.error);
-        setTweet(data);
-      })
-      .catch(() => { if (!cancelled) setFailed(true); });
-    return () => { cancelled = true; };
+
+    const load = () => {
+      fetch("/.netlify/functions/foxsoccer-tweet")
+        .then((res) => {
+          if (!res.ok) throw new Error(`status ${res.status}`);
+          return res.json();
+        })
+        .then((data) => {
+          if (cancelled) return;
+          if (data.error) throw new Error(data.error);
+          setTweet(data);
+        })
+        .catch(() => { if (!cancelled) setFailed(true); });
+    };
+
+    load();
+    const interval = setInterval(load, 5 * 60 * 1000);
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
   return (
