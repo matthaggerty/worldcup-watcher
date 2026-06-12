@@ -548,10 +548,6 @@ export default function WorldCupSchedule() {
             Every kickoff{" "}
             <span style={{ color:"#ccff00", fontWeight:700 }}>without the chaos.</span>
           </div>
-
-          <div style={{ fontSize:"10px", letterSpacing:"3px", color:"#7a8a94", fontWeight:600, marginTop:14 }}>
-            FIFA WORLD CUP 2026 &nbsp;·&nbsp; CANADA · MEXICO · USA &nbsp;·&nbsp; JUN 11 – JUL 19
-          </div>
         </div>
       </div>
 
