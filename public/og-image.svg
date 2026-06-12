@@ -1,0 +1,41 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1628"/>
+      <stop offset="50%" stop-color="#1a2d4f"/>
+      <stop offset="100%" stop-color="#0d1f38"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c8a84b"/>
+      <stop offset="40%" stop-color="#e8c96a"/>
+      <stop offset="100%" stop-color="#c8a84b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Gold header band -->
+  <rect width="1200" height="240" fill="url(#gold)"/>
+  <text x="600" y="80" font-family="Segoe UI, system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="10" fill="#5a3e00" text-anchor="middle">FIFA</text>
+  <text x="600" y="160" font-family="Segoe UI, system-ui, sans-serif" font-size="78" font-weight="900" letter-spacing="-1" fill="#1a1000" text-anchor="middle">WORLD CUP 2026</text>
+  <text x="600" y="208" font-family="Segoe UI, system-ui, sans-serif" font-size="24" font-weight="600" letter-spacing="6" fill="#5a3e00" text-anchor="middle">CANADA &#183; MEXICO &#183; USA   |   JUN 11 &#8211; JUL 19</text>
+
+  <!-- App name -->
+  <text x="600" y="350" font-family="Segoe UI, system-ui, sans-serif" font-size="56" font-weight="800" fill="#e8f0fe" text-anchor="middle">World Cup Watcher</text>
+  <text x="600" y="410" font-family="Segoe UI, system-ui, sans-serif" font-size="28" font-weight="500" fill="#8aabcc" text-anchor="middle">Group stage schedule, kickoff times &amp; broadcast info</text>
+
+  <!-- Group chips -->
+  <g font-family="Segoe UI, system-ui, sans-serif" font-size="22" font-weight="800" fill="#fff" text-anchor="middle">
+    <circle cx="290" cy="500" r="28" fill="#e74c3c"/><text x="290" y="508">A</text>
+    <circle cx="370" cy="500" r="28" fill="#e67e22"/><text x="370" y="508">B</text>
+    <circle cx="450" cy="500" r="28" fill="#f1c40f"/><text x="450" y="508">C</text>
+    <circle cx="530" cy="500" r="28" fill="#2ecc71"/><text x="530" y="508">D</text>
+    <circle cx="610" cy="500" r="28" fill="#1abc9c"/><text x="610" y="508">E</text>
+    <circle cx="690" cy="500" r="28" fill="#3498db"/><text x="690" y="508">F</text>
+    <circle cx="770" cy="500" r="28" fill="#9b59b6"/><text x="770" y="508">G</text>
+    <circle cx="850" cy="500" r="28" fill="#e91e63"/><text x="850" y="508">H</text>
+    <circle cx="930" cy="500" r="28" fill="#ff5722"/><text x="930" y="508">I</text>
+  </g>
+
+  <text x="600" y="590" font-family="Segoe UI, system-ui, sans-serif" font-size="22" font-weight="600" fill="#4a6a8a" text-anchor="middle">worldcupwatcher.netlify.app</text>
+</svg>
