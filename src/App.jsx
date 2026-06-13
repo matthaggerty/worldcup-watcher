@@ -489,27 +489,29 @@ function MatchCard({ m, tz, showDay, liveScores, day }) {
           <div style={{ minWidth:70, textAlign:"center", fontSize:"10px", color:"#4a6a8a" }}>TBD</div>
         )}
       </div>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
-        <span style={{ fontSize:"14px", fontWeight:700, color:"#ccff00" }}>
-          {m.etH != null ? convertTime(m.etH, m.etM, tz) : "TBD"}
-        </span>
-        {m.etH != null && (
-          <button
-            onClick={() => downloadIcs(m, day || m.day)}
-            style={{
-              display:"flex", alignItems:"center", gap:5,
-              background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)",
-              borderRadius:6, color:"#cfd8dc", fontWeight:600, fontSize:"11px",
-              padding:"4px 9px", cursor:"pointer",
-            }}>
-            📅 Add to Calendar
-          </button>
-        )}
-      </div>
-      <div style={{ background:"rgba(255,255,255,0.03)", borderRadius:6, padding:"6px 10px",
-        fontSize:"11px", color:"#cfd8dc", display:"flex", flexWrap:"wrap", gap:"4px 6px" }}>
-        <span style={{ color:"#5a7a9a", fontWeight:700 }}>Watch on:</span>
-        <span>{watchOn.join(", ")}</span>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ fontSize:"14px", fontWeight:700, color:"#ccff00" }}>
+            {m.etH != null ? convertTime(m.etH, m.etM, tz) : "TBD"}
+          </span>
+          {m.etH != null && (
+            <button
+              onClick={() => downloadIcs(m, day || m.day)}
+              title="Add to Calendar"
+              style={{
+                display:"flex", alignItems:"center", justifyContent:"center",
+                width:24, height:24,
+                background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)",
+                borderRadius:6, fontSize:"12px", cursor:"pointer",
+              }}>
+              📅
+            </button>
+          )}
+        </div>
+        <div style={{ fontSize:"11px", color:"#8aabcc", textAlign:"right" }}>
+          <span style={{ color:"#5a7a9a", fontWeight:700 }}>Watch on </span>
+          {watchOn.join(", ")}
+        </div>
       </div>
     </div>
   );
