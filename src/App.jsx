@@ -580,7 +580,8 @@ export default function WorldCupSchedule() {
   );
 
   return (
-    <div style={{ minHeight:"100vh", overflowX:"hidden", background:"linear-gradient(135deg,#0a0a0a 0%,#121212 50%,#000000 100%)", fontFamily:"'Segoe UI',system-ui,sans-serif", color:"#e8f0fe" }}>
+    <div style={{ minHeight:"100vh", background:"#05070a" }}>
+    <div style={{ maxWidth:520, margin:"0 auto", minHeight:"100vh", overflowX:"hidden", background:"linear-gradient(135deg,#0a0a0a 0%,#121212 50%,#000000 100%)", boxShadow:"0 0 60px rgba(0,0,0,0.6)", fontFamily:"'Segoe UI',system-ui,sans-serif", color:"#e8f0fe" }}>
 
       {/* Header */}
       <div style={{ position:"relative", background:"#000", padding:"24px 20px 18px", overflow:"hidden" }}>
@@ -703,6 +704,7 @@ export default function WorldCupSchedule() {
           </div>
         </>
       )}
+    </div>
     </div>
   );
 }
