@@ -580,7 +580,10 @@ export default function WorldCupSchedule() {
   );
 
   return (
-    <div style={{ minHeight:"100vh", background:"#05070a" }}>
+    <div style={{ minHeight:"100vh", background:`
+        radial-gradient(circle at 15% 10%, rgba(204,255,0,0.06), transparent 35%),
+        radial-gradient(circle at 85% 90%, rgba(40,120,255,0.08), transparent 40%),
+        #05070a` }}>
     <div style={{ maxWidth:520, margin:"0 auto", minHeight:"100vh", overflowX:"hidden", background:"linear-gradient(135deg,#0a0a0a 0%,#121212 50%,#000000 100%)", boxShadow:"0 0 60px rgba(0,0,0,0.6)", fontFamily:"'Segoe UI',system-ui,sans-serif", color:"#e8f0fe" }}>
 
       {/* Header */}
