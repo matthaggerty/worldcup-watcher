@@ -316,9 +316,33 @@ function formatDateYYYYMMDD(d) {
   return `${y}${m}${day}`;
 }
 
-// Polls ESPN's scoreboard for live/recent World Cup games, keyed by sorted team-code pair
+const FINAL_SCORES_KEY = "wcw-final-scores-2026";
+
+function loadFinalScores() {
+  try {
+    return JSON.parse(localStorage.getItem(FINAL_SCORES_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveFinalScores(scores) {
+  const finals = {};
+  Object.entries(scores).forEach(([key, v]) => {
+    if (v.state === "post") finals[key] = v;
+  });
+  try {
+    localStorage.setItem(FINAL_SCORES_KEY, JSON.stringify(finals));
+  } catch {
+    // ignore storage errors (e.g. private browsing)
+  }
+}
+
+// Polls ESPN's scoreboard for live/recent World Cup games, keyed by sorted team-code pair.
+// Once a match is final, its score is cached in localStorage so it keeps showing
+// even after it falls outside the -1/0/+1 day fetch window.
 function useLiveScores() {
-  const [liveScores, setLiveScores] = useState({});
+  const [liveScores, setLiveScores] = useState(loadFinalScores);
 
   useEffect(() => {
     let cancelled = false;
@@ -359,7 +383,11 @@ function useLiveScores() {
         }
       }));
 
-      if (!cancelled) setLiveScores(results);
+      if (!cancelled) setLiveScores(prev => {
+        const merged = { ...prev, ...results };
+        saveFinalScores(merged);
+        return merged;
+      });
     }
 
     fetchScores();
