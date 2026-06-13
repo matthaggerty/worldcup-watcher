@@ -754,6 +754,14 @@ export default function WorldCupSchedule() {
           </div>
         </>
       )}
+
+      {/* Footer */}
+      <div style={{ padding:"16px", textAlign:"center", fontSize:"12px", color:"#4a6a8a", borderTop:"1px solid rgba(255,255,255,0.07)" }}>
+        Created by{" "}
+        <a href="https://x.com/matthaggerty" target="_blank" rel="noopener noreferrer" style={{ color:"#8aabcc" }}>
+          @matthaggerty
+        </a>
+      </div>
     </div>
     </div>
   );
