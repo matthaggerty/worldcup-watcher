@@ -18,6 +18,7 @@ function TwitterTimeline() {
   const [shorts, setShorts] = useState(null);
   const [index, setIndex] = useState(0);
   const [failed, setFailed] = useState(false);
+  const [autoplay, setAutoplay] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,7 +52,7 @@ function TwitterTimeline() {
         </div>
         {shorts && shorts.length > 1 && (
           <button
-            onClick={() => setIndex((i) => (i + 1) % shorts.length)}
+            onClick={() => { setAutoplay(true); setIndex((i) => (i + 1) % shorts.length); }}
             style={{
               display:"flex", alignItems:"center", gap:4,
               background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)",
@@ -68,7 +69,7 @@ function TwitterTimeline() {
           <div style={{ position:"relative", width:"100%", aspectRatio:"9 / 16", background:"#000" }}>
             <iframe
               key={short.videoId}
-              src={`https://www.youtube.com/embed/${short.videoId}`}
+              src={`https://www.youtube.com/embed/${short.videoId}${autoplay ? "?autoplay=1&mute=1" : ""}`}
               title={short.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
