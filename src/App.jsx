@@ -110,6 +110,40 @@ function convertTime(etH, etM, tz) {
   return `${h12}${mm} ${period} ${tz}`;
 }
 
+function formatIcsDate(date) {
+  return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+}
+
+function downloadIcs(m, day) {
+  const start = new Date(`${day} 2026 ${m.etH}:${m.etM}:00 GMT-0400`);
+  if (isNaN(start.getTime())) return;
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  const uid = `${day}-${m.home}-${m.away}`.replace(/[^a-zA-Z0-9]+/g, "-");
+
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//World Cup Watcher//EN",
+    "BEGIN:VEVENT",
+    `UID:${uid}@worldcupwatcher.netlify.app`,
+    `DTSTAMP:${formatIcsDate(new Date())}`,
+    `DTSTART:${formatIcsDate(start)}`,
+    `DTEND:${formatIcsDate(end)}`,
+    `SUMMARY:${m.home} vs ${m.away}`,
+    `LOCATION:${m.venue}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+
+  const blob = new Blob([ics], { type: "text/calendar" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${uid}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const schedule = {
   "GROUP STAGE": {
     "Thu Jun 11": [
@@ -410,7 +444,7 @@ function LiveScoreBadge({ live, homeCode }) {
   );
 }
 
-function MatchCard({ m, tz, showDay, liveScores }) {
+function MatchCard({ m, tz, showDay, liveScores, day }) {
   const homeCode = COUNTRY_CODES[stripName(m.home)];
   const awayCode = COUNTRY_CODES[stripName(m.away)];
   const pairKey = homeCode && awayCode ? [homeCode, awayCode].sort().join("-") : null;
@@ -455,9 +489,23 @@ function MatchCard({ m, tz, showDay, liveScores }) {
           <div style={{ minWidth:70, textAlign:"center", fontSize:"10px", color:"#4a6a8a" }}>TBD</div>
         )}
       </div>
-      <span style={{ fontSize:"14px", fontWeight:700, color:"#ccff00" }}>
-        {m.etH != null ? convertTime(m.etH, m.etM, tz) : "TBD"}
-      </span>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
+        <span style={{ fontSize:"14px", fontWeight:700, color:"#ccff00" }}>
+          {m.etH != null ? convertTime(m.etH, m.etM, tz) : "TBD"}
+        </span>
+        {m.etH != null && (
+          <button
+            onClick={() => downloadIcs(m, day || m.day)}
+            style={{
+              display:"flex", alignItems:"center", gap:5,
+              background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)",
+              borderRadius:6, color:"#cfd8dc", fontWeight:600, fontSize:"11px",
+              padding:"4px 9px", cursor:"pointer",
+            }}>
+            📅 Add to Calendar
+          </button>
+        )}
+      </div>
       <div style={{ background:"rgba(255,255,255,0.03)", borderRadius:6, padding:"6px 10px",
         fontSize:"11px", color:"#cfd8dc", display:"flex", flexWrap:"wrap", gap:"4px 6px" }}>
         <span style={{ color:"#5a7a9a", fontWeight:700 }}>Watch on:</span>
@@ -699,7 +747,7 @@ export default function WorldCupSchedule() {
           {/* Match Cards */}
           <div style={{ padding:"0 16px 24px", touchAction:"pan-y" }}
             onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-            {dayMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={false} liveScores={liveScores} />)}
+            {dayMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={false} liveScores={liveScores} day={activeDay} />)}
             <TwitterTimeline />
           </div>
         </>
