@@ -5,10 +5,6 @@
 [functions]
   directory = "netlify/functions"
 
-[[edge_functions]]
-  path = "/*"
-  function = "og-image"
-
 [[redirects]]
   from = "/*"
   to = "/index.html"
