@@ -144,6 +144,13 @@ function downloadIcs(m, day) {
   URL.revokeObjectURL(url);
 }
 
+function hasMatchEnded(m, day) {
+  if (m.etH == null) return false;
+  const start = new Date(`${day} 2026 ${m.etH}:${m.etM}:00 GMT-0400`);
+  if (isNaN(start.getTime())) return false;
+  return Date.now() > start.getTime() + 2 * 60 * 60 * 1000;
+}
+
 const schedule = {
   "GROUP STAGE": {
     "Thu Jun 11": [
@@ -455,11 +462,28 @@ function MatchCard({ m, tz, showDay, liveScores, day }) {
     "Fox One", "Telemundo", "Peacock",
   ];
 
+  const isOver = live?.state === "post" || hasMatchEnded(m, day || m.day);
+  const [expanded, setExpanded] = useState(false);
+  const [highlight, setHighlight] = useState(null);
+  const fetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!expanded || !isOver || fetchedRef.current) return;
+    fetchedRef.current = true;
+    let cancelled = false;
+    setHighlight({ loading: true });
+    fetch(`/.netlify/functions/match-highlights?home=${encodeURIComponent(stripName(m.home))}&away=${encodeURIComponent(stripName(m.away))}`)
+      .then(res => res.json())
+      .then(data => { if (!cancelled) setHighlight({ loading: false, videoId: data.videoId || null }); })
+      .catch(() => { if (!cancelled) setHighlight({ loading: false, videoId: null }); });
+    return () => { cancelled = true; };
+  }, [expanded, isOver, m.home, m.away]);
+
   return (
-    <div style={{
+    <div onClick={() => setExpanded(e => !e)} style={{
       background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)",
       borderLeft:`3px solid ${groupColors[m.group]||"#ccff00"}`,
-      borderRadius:8, padding:"16px", marginBottom:12,
+      borderRadius:8, padding:"16px", marginBottom:12, cursor:"pointer",
       minHeight:128, display:"flex", flexDirection:"column", justifyContent:"space-between", gap:14,
     }}>
       {showDay && (
@@ -496,7 +520,7 @@ function MatchCard({ m, tz, showDay, liveScores, day }) {
           </span>
           {m.etH != null && (
             <button
-              onClick={() => downloadIcs(m, day || m.day)}
+              onClick={(e) => { e.stopPropagation(); downloadIcs(m, day || m.day); }}
               title="Add to Calendar"
               style={{
                 display:"flex", alignItems:"center", justifyContent:"center",
@@ -513,6 +537,33 @@ function MatchCard({ m, tz, showDay, liveScores, day }) {
           {watchOn.join(", ")}
         </div>
       </div>
+      {expanded && (
+        <div onClick={(e) => e.stopPropagation()}>
+          {!isOver ? (
+            <div style={{ textAlign:"center", padding:"16px 0", fontSize:"12px", color:"#4a6a8a" }}>
+              No Highlights Yet
+            </div>
+          ) : highlight?.loading ? (
+            <div style={{ textAlign:"center", padding:"16px 0", fontSize:"12px", color:"#4a6a8a" }}>
+              Loading highlights…
+            </div>
+          ) : highlight?.videoId ? (
+            <div style={{ position:"relative", paddingTop:"56.25%", borderRadius:8, overflow:"hidden" }}>
+              <iframe
+                src={`https://www.youtube.com/embed/${highlight.videoId}`}
+                title="Match highlights"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{ position:"absolute", top:0, left:0, width:"100%", height:"100%", border:0 }}
+              />
+            </div>
+          ) : (
+            <div style={{ textAlign:"center", padding:"16px 0", fontSize:"12px", color:"#4a6a8a" }}>
+              No Highlights Yet
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
