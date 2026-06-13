@@ -571,6 +571,13 @@ export default function WorldCupSchedule() {
     container.scrollTo({ left: container.scrollLeft + delta, behavior:"auto" });
   }, [activeDay]);
 
+  const [slideDir, setSlideDir] = useState(1);
+  const changeDay = (target) => {
+    const targetIndex = days.indexOf(target);
+    setSlideDir(targetIndex >= dayIndex ? 1 : -1);
+    setActiveDay(target);
+  };
+
   const touchStart = useRef(null);
   const isHorizontalSwipe = useRef(false);
   const handleTouchStart = (e) => {
@@ -592,9 +599,9 @@ export default function WorldCupSchedule() {
     touchStart.current = null;
     const SWIPE_THRESHOLD = 50;
     if (deltaX <= -SWIPE_THRESHOLD && dayIndex < days.length - 1) {
-      setActiveDay(days[dayIndex + 1]);
+      changeDay(days[dayIndex + 1]);
     } else if (deltaX >= SWIPE_THRESHOLD && dayIndex > 0) {
-      setActiveDay(days[dayIndex - 1]);
+      changeDay(days[dayIndex - 1]);
     }
   };
 
@@ -631,6 +638,16 @@ export default function WorldCupSchedule() {
         radial-gradient(circle at 15% 10%, rgba(204,255,0,0.16), transparent 45%),
         radial-gradient(circle at 85% 90%, rgba(40,120,255,0.22), transparent 50%),
         #05070a` }}>
+    <style>{`
+      @keyframes slideInFromRight {
+        from { transform: translateX(28px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideInFromLeft {
+        from { transform: translateX(-28px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+    `}</style>
     <div style={{ maxWidth:520, margin:"0 auto", minHeight:"100vh", overflowX:"hidden", background:"linear-gradient(135deg,#0a0a0a 0%,#121212 50%,#000000 100%)", boxShadow:"0 0 60px rgba(0,0,0,0.6)", fontFamily:"'Segoe UI',system-ui,sans-serif", color:"#e8f0fe" }}>
 
       {/* Header */}
@@ -734,20 +751,22 @@ export default function WorldCupSchedule() {
           {/* Day Selector */}
           <div ref={dayScrollRef} style={{ padding:"10px 16px", display:"flex", gap:6, overflowX:"auto", WebkitOverflowScrolling:"touch", scrollbarWidth:"none", borderBottom:"1px solid rgba(255,255,255,0.07)" }}>
             {days.map(d => (
-              <button key={d} ref={activeDay===d ? activeDayRef : null} onClick={() => setActiveDay(d)}
+              <button key={d} ref={activeDay===d ? activeDayRef : null} onClick={() => changeDay(d)}
                 style={{ whiteSpace:"nowrap", padding:"5px 11px",
-                  background: activeDay===d ? "#ccff00" : "rgba(255,255,255,0.06)",
+                  background: activeDay===d ? "linear-gradient(135deg, #ccff00, #9fe600)" : "rgba(255,255,255,0.06)",
                   border:"1px solid", borderColor: activeDay===d ? "#ccff00" : "rgba(255,255,255,0.12)",
                   borderRadius:6, cursor:"pointer", fontSize:"12px",
                   fontWeight: activeDay===d ? 700 : 500,
-                  color: activeDay===d ? "#0a0a0a" : "#8aabcc" }}>
+                  color: activeDay===d ? "#0a0a0a" : "#8aabcc",
+                  transition:"background 0.35s ease, border-color 0.35s ease, color 0.35s ease" }}>
                 {d}
               </button>
             ))}
           </div>
 
           {/* Match Cards */}
-          <div style={{ padding:"0 16px 24px", touchAction:"pan-y" }}
+          <div key={activeDay} style={{ padding:"0 16px 24px", touchAction:"pan-y",
+              animation: `${slideDir > 0 ? "slideInFromRight" : "slideInFromLeft"} 0.28s ease-out` }}
             onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
             {dayMatches.map((m,i) => <MatchCard key={i} m={m} tz={tz} showDay={false} liveScores={liveScores} day={activeDay} />)}
             <TwitterTimeline />
