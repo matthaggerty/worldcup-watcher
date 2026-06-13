@@ -1,41 +1,96 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0a1628"/>
-      <stop offset="50%" stop-color="#1a2d4f"/>
-      <stop offset="100%" stop-color="#0d1f38"/>
+    <radialGradient id="floodGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="40%" stop-color="#dff5ff" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#dff5ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="pitchGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ccff00" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#ccff00" stop-opacity="0"/>
     </linearGradient>
-    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#c8a84b"/>
-      <stop offset="40%" stop-color="#e8c96a"/>
-      <stop offset="100%" stop-color="#c8a84b"/>
+    <linearGradient id="fadeLeft" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="1"/>
+      <stop offset="55%" stop-color="#000000" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
     </linearGradient>
   </defs>
 
-  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="#000000"/>
 
-  <!-- Gold header band -->
-  <rect width="1200" height="240" fill="url(#gold)"/>
-  <text x="600" y="80" font-family="Segoe UI, system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="10" fill="#5a3e00" text-anchor="middle">FIFA</text>
-  <text x="600" y="160" font-family="Segoe UI, system-ui, sans-serif" font-size="78" font-weight="900" letter-spacing="-1" fill="#1a1000" text-anchor="middle">WORLD CUP 2026</text>
-  <text x="600" y="208" font-family="Segoe UI, system-ui, sans-serif" font-size="24" font-weight="600" letter-spacing="6" fill="#5a3e00" text-anchor="middle">CANADA &#183; MEXICO &#183; USA   |   JUN 11 &#8211; JUL 19</text>
+  <!-- Stadium roof / seating bowl silhouette -->
+  <path d="M620 420 C 760 140, 1140 90, 1200 130 L 1200 0 L 620 0 Z" fill="#0d1a26"/>
+  <path d="M680 450 C 800 190, 1140 160, 1200 195 L 1200 0 L 680 0 Z" fill="#13202e"/>
 
-  <!-- App name -->
-  <text x="600" y="350" font-family="Segoe UI, system-ui, sans-serif" font-size="56" font-weight="800" fill="#e8f0fe" text-anchor="middle">World Cup Watcher</text>
-  <text x="600" y="410" font-family="Segoe UI, system-ui, sans-serif" font-size="28" font-weight="500" fill="#8aabcc" text-anchor="middle">Group stage schedule, kickoff times &amp; broadcast info</text>
-
-  <!-- Group chips -->
-  <g font-family="Segoe UI, system-ui, sans-serif" font-size="22" font-weight="800" fill="#fff" text-anchor="middle">
-    <circle cx="290" cy="500" r="28" fill="#e74c3c"/><text x="290" y="508">A</text>
-    <circle cx="370" cy="500" r="28" fill="#e67e22"/><text x="370" y="508">B</text>
-    <circle cx="450" cy="500" r="28" fill="#f1c40f"/><text x="450" y="508">C</text>
-    <circle cx="530" cy="500" r="28" fill="#2ecc71"/><text x="530" y="508">D</text>
-    <circle cx="610" cy="500" r="28" fill="#1abc9c"/><text x="610" y="508">E</text>
-    <circle cx="690" cy="500" r="28" fill="#3498db"/><text x="690" y="508">F</text>
-    <circle cx="770" cy="500" r="28" fill="#9b59b6"/><text x="770" y="508">G</text>
-    <circle cx="850" cy="500" r="28" fill="#e91e63"/><text x="850" y="508">H</text>
-    <circle cx="930" cy="500" r="28" fill="#ff5722"/><text x="930" y="508">I</text>
+  <!-- Seating texture dots -->
+  <g fill="#2a3d4f" opacity="0.6">
+    <circle cx="800" cy="110" r="2.5"/><circle cx="830" cy="103" r="2.5"/><circle cx="860" cy="99" r="2.5"/>
+    <circle cx="890" cy="97" r="2.5"/><circle cx="920" cy="96" r="2.5"/><circle cx="950" cy="97" r="2.5"/>
+    <circle cx="980" cy="101" r="2.5"/><circle cx="1010" cy="107" r="2.5"/><circle cx="1040" cy="115" r="2.5"/>
+    <circle cx="1070" cy="126" r="2.5"/><circle cx="1100" cy="140" r="2.5"/><circle cx="1130" cy="156" r="2.5"/>
+    <circle cx="1160" cy="174" r="2.5"/><circle cx="1190" cy="195" r="2.5"/>
+    <circle cx="830" cy="140" r="2.5"/><circle cx="865" cy="131" r="2.5"/><circle cx="900" cy="125" r="2.5"/>
+    <circle cx="935" cy="123" r="2.5"/><circle cx="970" cy="125" r="2.5"/><circle cx="1005" cy="131" r="2.5"/>
+    <circle cx="1040" cy="142" r="2.5"/><circle cx="1075" cy="157" r="2.5"/><circle cx="1110" cy="175" r="2.5"/>
+    <circle cx="1145" cy="196" r="2.5"/><circle cx="1180" cy="220" r="2.5"/>
   </g>
 
-  <text x="600" y="590" font-family="Segoe UI, system-ui, sans-serif" font-size="22" font-weight="600" fill="#4a6a8a" text-anchor="middle">worldcupwatcher.netlify.app</text>
+  <!-- Floodlight masts -->
+  <g stroke="#1c2c3a" stroke-width="5">
+    <line x1="1000" y1="220" x2="975" y2="50"/>
+    <line x1="1130" y1="245" x2="1155" y2="75"/>
+  </g>
+
+  <!-- Floodlight heads -->
+  <g fill="#3a4f63">
+    <rect x="910" y="25" width="125" height="42" rx="4"/>
+    <rect x="1090" y="50" width="125" height="42" rx="4"/>
+  </g>
+  <g fill="#cfe9ff">
+    <circle cx="929" cy="36" r="3.5"/><circle cx="948" cy="36" r="3.5"/><circle cx="967" cy="36" r="3.5"/><circle cx="986" cy="36" r="3.5"/><circle cx="1005" cy="36" r="3.5"/><circle cx="1024" cy="36" r="3.5"/>
+    <circle cx="929" cy="55" r="3.5"/><circle cx="948" cy="55" r="3.5"/><circle cx="967" cy="55" r="3.5"/><circle cx="986" cy="55" r="3.5"/><circle cx="1005" cy="55" r="3.5"/><circle cx="1024" cy="55" r="3.5"/>
+    <circle cx="1109" cy="61" r="3.5"/><circle cx="1128" cy="61" r="3.5"/><circle cx="1147" cy="61" r="3.5"/><circle cx="1166" cy="61" r="3.5"/><circle cx="1185" cy="61" r="3.5"/><circle cx="1204" cy="61" r="3.5"/>
+    <circle cx="1109" cy="80" r="3.5"/><circle cx="1128" cy="80" r="3.5"/><circle cx="1147" cy="80" r="3.5"/><circle cx="1166" cy="80" r="3.5"/><circle cx="1185" cy="80" r="3.5"/><circle cx="1204" cy="80" r="3.5"/>
+  </g>
+
+  <!-- Floodlight glow -->
+  <circle cx="975" cy="50" r="220" fill="url(#floodGlow)"/>
+  <circle cx="1155" cy="75" r="220" fill="url(#floodGlow)"/>
+
+  <!-- Pitch -->
+  <rect x="500" y="490" width="700" height="140" fill="#0b1f10"/>
+  <path d="M500 630 L 1200 460 L 1200 630 Z" fill="url(#pitchGlow)"/>
+
+  <!-- Pitch lines -->
+  <g stroke="#9affd6" stroke-opacity="0.35" stroke-width="2.5" fill="none">
+    <path d="M530 575 L 1200 440"/>
+    <path d="M580 615 L 1200 490"/>
+    <ellipse cx="1050" cy="520" rx="95" ry="28" transform="rotate(-12 1050 520)"/>
+  </g>
+
+  <!-- Fade to black on the left so text stays legible -->
+  <rect width="1200" height="630" fill="url(#fadeLeft)"/>
+
+  <!-- Logo icon -->
+  <g transform="translate(80, 70)">
+    <circle cx="28" cy="36" r="24" stroke="#ccff00" stroke-width="4"/>
+    <path d="M28 16 L40 26 L36 40 L20 40 L16 26 Z M28 16 L28 12 M40 26 L52 22 M36 40 L44 52 M20 40 L12 52 M16 26 L4 22"
+      stroke="#ccff00" stroke-width="3" fill="none"/>
+    <line x1="60" y1="18" x2="116" y2="18" stroke="#ccff00" stroke-width="4" opacity="0.9"/>
+    <line x1="60" y1="28" x2="100" y2="28" stroke="#ccff00" stroke-width="4" opacity="0.6"/>
+    <line x1="60" y1="38" x2="84" y2="38" stroke="#ccff00" stroke-width="4" opacity="0.35"/>
+  </g>
+
+  <!-- App name -->
+  <text x="78" y="270" font-family="'Arial Black', Impact, Segoe UI, system-ui, sans-serif" font-weight="900" font-size="96" letter-spacing="-2" fill="#ffffff">WORLD CUP</text>
+  <text x="78" y="370" font-family="'Arial Black', Impact, Segoe UI, system-ui, sans-serif" font-weight="900" font-size="96" letter-spacing="-2" fill="#ccff00">WATCHER</text>
+
+  <!-- Accent underline -->
+  <rect x="80" y="402" width="72" height="8" fill="#ccff00"/>
+
+  <!-- Tagline -->
+  <text x="78" y="460" font-family="Segoe UI, system-ui, sans-serif" font-weight="500" font-size="36" fill="#cfd8dc">Every kickoff <tspan fill="#ccff00" font-weight="700">without the chaos.</tspan></text>
+
+  <!-- URL -->
+  <text x="78" y="580" font-family="Segoe UI, system-ui, sans-serif" font-weight="600" font-size="24" fill="#4a6a8a">worldcupwatcher.netlify.app</text>
 </svg>
