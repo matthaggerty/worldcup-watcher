@@ -244,10 +244,10 @@ const groupColors = {
   R32:"#546e7a",R16:"#546e7a",QF:"#546e7a",SF:"#546e7a","3P":"#546e7a",FIN:"#c0392b",
 };
 
-const broadcastStyle = {
-  FOX:  { bg:"#003366", color:"#fff", label:"FOX"  },
-  FS1:  { bg:"#cc0000", color:"#fff", label:"FS1"  },
-  TUBI: { bg:"#00e364", color:"#000", label:"TUBI" },
+const broadcastLabels = {
+  FOX:  "FOX",
+  FS1:  "FS1",
+  TUBI: "Tubi",
 };
 
 // Maps our country names to ESPN's 3-letter team abbreviations
@@ -416,6 +416,10 @@ function MatchCard({ m, tz, showDay, liveScores }) {
   const pairKey = homeCode && awayCode ? [homeCode, awayCode].sort().join("-") : null;
   const live = pairKey ? liveScores?.[pairKey] : null;
   const showLive = live && live.state !== "pre";
+  const watchOn = [
+    ...(m.broadcast||[]).map(b => broadcastLabels[b]||b),
+    "Fox One", "Telemundo", "Peacock",
+  ];
 
   return (
     <div style={{
@@ -451,21 +455,13 @@ function MatchCard({ m, tz, showDay, liveScores }) {
           <div style={{ minWidth:70, textAlign:"center", fontSize:"10px", color:"#4a6a8a" }}>TBD</div>
         )}
       </div>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:6 }}>
-        <span style={{ fontSize:"14px", fontWeight:700, color:"#ccff00" }}>
-          {m.etH != null ? convertTime(m.etH, m.etM, tz) : "TBD"}
-        </span>
-        <div style={{ display:"flex", gap:4, flexWrap:"wrap", alignItems:"center" }}>
-          {(m.broadcast||[]).map(b => (
-            <div key={b} style={{ background:broadcastStyle[b]?.bg||"#333", color:broadcastStyle[b]?.color||"#fff",
-              borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>
-              {broadcastStyle[b]?.label||b}
-            </div>
-          ))}
-          <div style={{ background:"#1a4a88", color:"#fff", borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>Fox One</div>
-          <div style={{ background:"#c00", color:"#fff", borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>Telemundo</div>
-          <div style={{ background:"#9b59b6", color:"#fff", borderRadius:4, padding:"2px 7px", fontSize:"10px", fontWeight:700 }}>Peacock</div>
-        </div>
+      <span style={{ fontSize:"14px", fontWeight:700, color:"#ccff00" }}>
+        {m.etH != null ? convertTime(m.etH, m.etM, tz) : "TBD"}
+      </span>
+      <div style={{ background:"rgba(255,255,255,0.03)", borderRadius:6, padding:"6px 10px",
+        fontSize:"11px", color:"#cfd8dc", display:"flex", flexWrap:"wrap", gap:"4px 6px" }}>
+        <span style={{ color:"#5a7a9a", fontWeight:700 }}>Watch on:</span>
+        <span>{watchOn.join(", ")}</span>
       </div>
     </div>
   );
