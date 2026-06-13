@@ -1,7 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 
-const mkMatch = (etH, etM, home, away, group, venue, broadcast, favorite, confidence) => ({
-  etH, etM, home, away, group, venue, broadcast, favorite, confidence
+const mkMatch = (etH, etM, home, away, group, venue, broadcast, favorite, confidence, finalScore) => ({
+  etH, etM, home, away, group, venue, broadcast, favorite, confidence, finalScore
 });
 
 function timeAgo(iso) {
@@ -154,8 +154,8 @@ function hasMatchEnded(m, day) {
 const schedule = {
   "GROUP STAGE": {
     "Thu Jun 11": [
-      mkMatch(15,0,"🇲🇽 Mexico","🇿🇦 S. Africa","A","Mexico City",["FOX","TUBI"],"home","strong"),
-      mkMatch(22,0,"🇰🇷 S. Korea","🇨🇿 Czechia","A","Guadalajara",["FS1"],"even","slight"),
+      mkMatch(15,0,"🇲🇽 Mexico","🇿🇦 S. Africa","A","Mexico City",["FOX","TUBI"],"home","strong",[2,0]),
+      mkMatch(22,0,"🇰🇷 S. Korea","🇨🇿 Czechia","A","Guadalajara",["FS1"],"even","slight",[2,1]),
     ],
     "Fri Jun 12": [
       mkMatch(15,0,"🇨🇦 Canada","🇧🇦 Bosnia","B","Toronto",["FOX"],"home","slight"),
@@ -483,7 +483,8 @@ function MatchCard({ m, tz, showDay, liveScores, day }) {
   const homeCode = COUNTRY_CODES[stripName(m.home)];
   const awayCode = COUNTRY_CODES[stripName(m.away)];
   const pairKey = homeCode && awayCode ? [homeCode, awayCode].sort().join("-") : null;
-  const live = pairKey ? liveScores?.[pairKey] : null;
+  const live = (pairKey ? liveScores?.[pairKey] : null)
+    || (m.finalScore ? { state:"post", homeCode, homeScore:m.finalScore[0], awayScore:m.finalScore[1] } : null);
   const showLive = live && live.state !== "pre";
   const watchOn = [
     ...(m.broadcast||[]).map(b => broadcastLabels[b]||b),
